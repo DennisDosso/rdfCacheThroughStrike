@@ -1,0 +1,50 @@
+# you first need to run these queries on the RDF database that you are going to use
+# the values returned by these queries (in a csv file) can be used to generate the queries
+# actually used in our experiments
+
+# for BSBM query 1
+
+PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT DISTINCT ?prodType ?prodFeat1 ?prodFeat2
+WHERE {
+ ?product rdfs:label ?label .
+ ?product a ?prodType.
+ ?product bsbm:productFeature ?prodFeat1 .
+ ?product bsbm:productFeature ?prodFeat2 .
+?product bsbm:productPropertyNumeric1 ?value1 .
+	FILTER (?value1 > 50)
+    FILTER (?prodFeat1 != ?prodFeat2)
+	}
+# ORDER BY ?label
+LIMIT 1000
+
+
+# for BSBM query 2
+PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT distinct ?product
+WHERE {
+?product rdfs:label ?label .
+?product rdfs:comment ?comment .
+?product bsbm:producer ?p .
+?p rdfs:label ?producer .
+?product dc:publisher ?p .
+?product bsbm:productFeature ?f .
+?f rdfs:label ?productFeature .
+?product bsbm:productPropertyTextual1 ?propertyTextual1 .
+?product bsbm:productPropertyTextual2 ?propertyTextual2 .
+?product bsbm:productPropertyTextual3 ?propertyTextual3 .
+?product bsbm:productPropertyNumeric1 ?propertyNumeric1 .
+?product bsbm:productPropertyNumeric2 ?propertyNumeric2 .
+OPTIONAL { ?product bsbm:productPropertyTextual4 ?propertyTextual4 }
+OPTIONAL { ?product bsbm:productPropertyTextual5 ?propertyTextual5 }
+OPTIONAL { ?product bsbm:productPropertyNumeric4 ?propertyNumeric4 }
+}
+
