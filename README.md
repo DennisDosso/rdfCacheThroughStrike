@@ -1,6 +1,57 @@
 # Project: Credit to RDF data to automatically generate a subgraph
 
-Here a list of operations frequently done to run the experiments, step by step
+Here a list of operations frequently done to run the experiments, step by step.
+
+## PREPRECOESSING
+
+### Step 1: create the database BSBM
+
+The very first step is to create a database. Here we used BSBM. If you have the jar, the command to generate the data 
+is the following (it creates a text file containing triples composing the database):
+<pre>
+java -cp bsbm.jar benchmark/generator/Generator -s ttl -fn dataset1m -pc 3000
+</pre>
+(you need the BSBM jar for this)
+
+For some more information go to their website: http://wbsg.informatik.uni-mannheim.de/bizer/berlinsparqlbenchmark/spec/Dataset/index.html
+
+pc is the number of products. 
+* -pc 200 generates 75.000 triples. .
+* -pc 300 generates around 100K triples
+* -pc 666 generates 250K triples
+* -pc 2785 generates around 1M triples
+* -pc 70812 generates 25M triples
+* -pc 284826 generates 100M triples
+
+
+### Step 2: split the database in sub-parts if it is too big
+
+This code in particular generates files that are made of around 250K lines.
+
+<pre>
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/SplitDatasetFile.java
+</pre>
+
+properties to set (paths.properties):
+* rdfFilePath: the path of big file to be split
+* ttlFilesDirectory: the path of the directory where to write the triples'
+
+NB: you should not import only part of the files generated in this way, since there are some of these files that contain 
+properties that are not present in other parts. 
+
+
+### Step 3: import the database into a triplestore on disk (using rdf4j)
+
+<pre>
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/ImportDatabase.java
+</pre>
+
+Properties to set:
+
+* ttlFilesDirectory: where to find the file (turtle) to import
+* databaseIndexDirectory: directory where to save the on-disk Database
+
+## MAIN PART
 
 ## Step 1: generate queries
 
@@ -21,9 +72,18 @@ java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* query_generation/GenerateQueries
 </code>
 
 Properties to set:
-* queryBuildingValuesFile: files where to find the values that "create" the queries
+* queryBuildingValuesFile: file where to find the values that "create" the queries of one class
 * selectQueryFile: the path of the file where to print the queries (one per line)
 * databaseIndexDirectory: path of the directory containing the rdf4j database.
+* whichQueryTypeToCreate: a string identifying the query type we want to create. This can have one of the following values
+  (or no query will be built):
+  * ONE: class 1 of the BSBM queries
+  * TWO: class 2 of the BSBM queries
+  * FIVE
+  * SIX
+  * SEVEN
+  * EIGHT
+  * TEN
 
 
 

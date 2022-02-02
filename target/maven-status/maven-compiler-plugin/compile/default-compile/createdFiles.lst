@@ -1,3 +1,4 @@
+test/printing/HelloWorld.class
 utils/ReadPropertyFile.class
 properties/ProjectValues.class
 threads/UpdateRDBDatabaseWithTriplesFromLineageThread.class

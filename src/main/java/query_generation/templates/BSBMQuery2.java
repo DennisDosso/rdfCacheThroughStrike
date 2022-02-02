@@ -11,21 +11,21 @@ public class BSBMQuery2 {
             "SELECT ?label ?comment ?producer ?productFeature ?propertyTextual1 ?propertyTextual2 ?propertyTextual3\n" +
             " ?propertyNumeric1 ?propertyNumeric2 ?propertyTextual4 ?propertyTextual5 ?propertyNumeric4 \n" +
             "WHERE {\n" +
-            " %s rdfs:label ?label .\n" +
-            "	%s rdfs:comment ?comment .\n" +
-            "	%s bsbm:producer ?p .\n" +
+            "   %s rdfs:label ?label .\n" + // 1
+            "	%s rdfs:comment ?comment .\n" + // 2
+            "	%s bsbm:producer ?p .\n" + // 3
             "	?p rdfs:label ?producer .\n" +
-            " %s dc:publisher ?p . \n" +
-            "	%s bsbm:productFeature ?f .\n" +
+            " %s dc:publisher ?p . \n" + // 4
+            "	%s bsbm:productFeature ?f .\n" + // 5
             "	?f rdfs:label ?productFeature .\n" +
-            "	%s bsbm:productPropertyTextual1 ?propertyTextual1 .\n" +
-            "	%s bsbm:productPropertyTextual2 ?propertyTextual2 .\n" +
-            " %s bsbm:productPropertyTextual3 ?propertyTextual3 .\n" +
-            "	%s bsbm:productPropertyNumeric1 ?propertyNumeric1 .\n" +
-            "	%s bsbm:productPropertyNumeric2 ?propertyNumeric2 .\n" +
-            "	OPTIONAL { %s bsbm:productPropertyTextual4 ?propertyTextual4 }\n" +
-            " OPTIONAL { %s bsbm:productPropertyTextual5 ?propertyTextual5 }\n" +
-            " OPTIONAL { %s bsbm:productPropertyNumeric4 ?propertyNumeric4 }\n" +
+            "	%s bsbm:productPropertyTextual1 ?propertyTextual1 .\n" + // 6
+            "	%s bsbm:productPropertyTextual2 ?propertyTextual2 .\n" + // 7
+            "   %s bsbm:productPropertyTextual3 ?propertyTextual3 .\n" + // 8
+            "	%s bsbm:productPropertyNumeric1 ?propertyNumeric1 .\n" + // 9
+            "	%s bsbm:productPropertyNumeric2 ?propertyNumeric2 .\n" + // 10
+            "	OPTIONAL { %s bsbm:productPropertyTextual4 ?propertyTextual4 }\n" + // 11
+            " OPTIONAL { %s bsbm:productPropertyTextual5 ?propertyTextual5 }\n" + // 12
+            " OPTIONAL { %s bsbm:productPropertyNumeric4 ?propertyNumeric4 }\n" + // 13
             "} ";
 
     public static String construct = "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\n" +

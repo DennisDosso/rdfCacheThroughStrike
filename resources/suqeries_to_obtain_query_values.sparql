@@ -47,4 +47,113 @@ OPTIONAL { ?product bsbm:productPropertyTextual4 ?propertyTextual4 }
 OPTIONAL { ?product bsbm:productPropertyTextual5 ?propertyTextual5 }
 OPTIONAL { ?product bsbm:productPropertyNumeric4 ?propertyNumeric4 }
 }
+LIMIT 1000
 
+
+# for BSBM query number 3
+PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+
+SELECT distinct ?product_type ?product_feature_1 ?product_feature_2
+WHERE {
+?product rdfs:label ?label .
+?product a ?product_type .
+?product bsbm:productFeature ?product_feature_1 .
+?product bsbm:productPropertyNumeric1 ?p1 .
+FILTER ( ?p1 > 100 )
+?product bsbm:productPropertyNumeric3 ?p3 .
+FILTER ( ?p3 < 300 )
+OPTIONAL {
+?product bsbm:productFeature ?product_feature_2 .
+?product rdfs:label ?testVar
+FILTER (?product_feature_1 != ?product_feature_2)}
+# FILTER (!bound(?testVar)) # -- this command here makes the query impossible --
+}
+LIMIT 1000
+
+
+# for BSBM query 5
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+
+SELECT DISTINCT ?pxyz
+WHERE {
+?product rdfs:label ?productLabel .
+FILTER (?pxyz != ?product)
+?pxyz bsbm:productFeature ?prodFeature .
+?product bsbm:productFeature ?prodFeature .
+?pxyz bsbm:productPropertyNumeric1 ?origProperty1 .
+?product bsbm:productPropertyNumeric1 ?simProperty1 .
+FILTER (?simProperty1 < (?origProperty1 + 120) && ?simProperty1 > (?origProperty1 - 120))
+?pxyz bsbm:productPropertyNumeric2 ?origProperty2 .
+?product bsbm:productPropertyNumeric2 ?simProperty2 .
+FILTER (?simProperty2 < (?origProperty2 + 170) && ?simProperty2 > (?origProperty2 - 170))
+}
+LIMIT 1000
+
+
+# for query 6
+SELECT ?label
+WHERE {
+?product rdfs:label ?label .
+?product rdf:type bsbm:Product .
+}
+LIMIT 1000
+
+
+# for query 7 - hard!
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+
+SELECT distinct ?pxyz ?country
+WHERE {
+?pxyz rdfs:label ?productLabel .
+# OPTIONAL {
+?offer bsbm:product ?pxyz .
+?offer bsbm:price ?price .
+?offer bsbm:vendor ?vendor .
+?vendor rdfs:label ?vendorTitle .
+?vendor bsbm:country ?country .
+?offer dc:publisher ?vendor .
+?offer bsbm:validTo ?date .
+FILTER (?date > "2008-03-01"^^xsd:dateTime )
+# }
+OPTIONAL {
+?review bsbm:reviewFor ?xyz .
+?review rev:reviewer ?reviewer .
+?reviewer foaf:name ?revName .
+?review dc:title ?revTitle .
+OPTIONAL { ?review bsbm:rating1 ?rating1 . }
+OPTIONAL { ?review bsbm:rating2 ?rating2 . }
+}
+}
+LIMIT 100
+
+# query 8
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX rev: <http://purl.org/stuff/rev#>
+PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+
+SELECT distinct ?pxyz
+WHERE {
+?review bsbm:reviewFor ?pxyz .
+?review dc:title ?title .
+?review rev:text ?text .
+FILTER langMatches( lang(?text), "EN" )
+?review bsbm:reviewDate ?reviewDate .
+?review rev:reviewer ?reviewer .
+?reviewer foaf:name ?reviewerName .
+OPTIONAL { ?review bsbm:rating1 ?rating1 . }
+OPTIONAL { ?review bsbm:rating2 ?rating2 . }
+OPTIONAL { ?review bsbm:rating3 ?rating3 . }
+OPTIONAL { ?review bsbm:rating4 ?rating4 . }
+}
+LIMIT 1000

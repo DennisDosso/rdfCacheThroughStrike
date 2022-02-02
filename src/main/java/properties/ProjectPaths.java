@@ -12,6 +12,9 @@ import java.util.Map;
  * */
 public class ProjectPaths {
 
+    /** path of the file containing the rdf database in some format, e.g. turtle
+     * */
+    public static String rdfFilePath;
     /** Directory containing the .ttl files with the information to add to the RDF database
      * */
     public static String ttlFilesDirectory;
@@ -42,6 +45,7 @@ public class ProjectPaths {
     public static void init() {
         Map<String, String> map = ReadPropertyFile.doIt("properties/paths.properties");
 
+        rdfFilePath = map.get("rdfFilePath");
         ttlFilesDirectory = map.get("ttlFilesDirectory");
         databaseIndexDirectory = map.get("databaseIndexDirectory");
         queryBuildingValuesFile = map.get("queryBuildingValuesFile");

@@ -4,7 +4,7 @@ import org.apache.commons.math3.distribution.NormalDistribution;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import properties.ProjectPaths;
 import properties.ProjectValues;
-import query_generation.templates.BSBMQuery1;
+import query_generation.templates.*;
 import utils.SilenceLog4J;
 import utils.TripleStoreHandler;
 
@@ -24,6 +24,7 @@ import java.util.List;
  *      the property outputConstructQueryFile to know where to write the construct queries,
  *      the property whichQueryTypeToCreate to know which query type we want to create (e.g., ONE
  *      for query of type 1 in the BSBM case)
+ *      and queryBuildingValuesFile to get the values necessary to build the queries.
  *      </p>
  * */
 public class GenerateQueries {
@@ -103,9 +104,24 @@ public class GenerateQueries {
                 // now get the values
                 String[] parameters = queryValues.get(randomNum);
 
+                // IMPORTANT
                 // now decide which type of query we want to print
                 if(ProjectValues.whichQueryTypeToCreate.equals("ONE")) {
                     this.generateBSBMQuery1(parameters, w, wc);
+                } else if(ProjectValues.whichQueryTypeToCreate.equals("TWO")) {
+                    this.generateBSBMQuery2(parameters, w, wc);
+                } else if (ProjectValues.whichQueryTypeToCreate.equals("THREE")) {
+                    this.generateBSBMQuery3(parameters, w, wc);
+                } else if (ProjectValues.whichQueryTypeToCreate.equals("FIVE")) {
+                    this.generateBSBMQuery5(parameters, w, wc);
+                } else if (ProjectValues.whichQueryTypeToCreate.equals("SIX")) {
+                    this.generateBSBMQuery6(parameters, w, wc);
+                } else if (ProjectValues.whichQueryTypeToCreate.equals("SEVEN")) {
+                    this.generateBSBMQuery7(parameters, w, wc);
+                } else if (ProjectValues.whichQueryTypeToCreate.equals("EIGHT")) {
+                    this.generateBSBMQuery8(parameters, w, wc);
+                } else if (ProjectValues.whichQueryTypeToCreate.equals("TEN")) {
+                    this.generateBSBMQuery10(parameters, w, wc);
                 }
 
             }
@@ -114,6 +130,8 @@ public class GenerateQueries {
             e.printStackTrace();
         }
     }
+
+
 
     public void generateBSBMQuery1(String[] parameters,  BufferedWriter w,  BufferedWriter wc) throws IOException {
         // print the select and then the construct query
@@ -124,6 +142,94 @@ public class GenerateQueries {
         w.write(selectQuery.replaceAll("\n", " "));
         w.newLine();
         String constructQuery = String.format(BSBMQuery1.construct_query, param1, param2, param3, param1, param2, param3);
+        wc.write(constructQuery.replaceAll("\n", " "));
+        wc.newLine();
+    }
+
+    public void generateBSBMQuery2(String[] parameters,  BufferedWriter w,  BufferedWriter wc) throws IOException {
+        String param1 = "<" + parameters[0] + ">";
+        String selectQuery = String.format(BSBMQuery2.select, param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1);
+        w.write(selectQuery.replaceAll("\n", " "));
+        w.newLine();
+        String constructQuery = String.format(BSBMQuery2.construct, param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1, param1, param1,
+                param1, param1);
+        wc.write(constructQuery.replaceAll("\n", " "));
+        wc.newLine();
+    }
+
+    private void generateBSBMQuery3(String[] parameters, BufferedWriter w, BufferedWriter wc) throws IOException {
+        String param1 = "<" + parameters[0] + ">";
+        String param2 = "<" + parameters[1] + ">";
+        String param3 = "<" + parameters[2] + ">";
+        String selectQuery = String.format(BSBMQuery3.select, param1, param2, param3);
+        w.write(selectQuery.replaceAll("\n", " "));
+        w.newLine();
+        String constructQuery = String.format(BSBMQuery3.construct, param1, param2, param3,
+                param1, param2, param3);
+        wc.write(constructQuery.replaceAll("\n", " "));
+        wc.newLine();
+    }
+
+    private void generateBSBMQuery5(String[] parameters, BufferedWriter w, BufferedWriter wc) throws IOException {
+        String param1 = "<" + parameters[0] + ">";
+        String selectQuery = String.format(BSBMQuery5.select, param1, param1, param1, param1);
+        w.write(selectQuery.replaceAll("\n", " "));
+        w.newLine();
+        String constructQuery = String.format(BSBMQuery5.construct, param1, param1, param1, param1,
+                param1, param1, param1, param1);
+        wc.write(constructQuery.replaceAll("\n", " "));
+        wc.newLine();
+    }
+
+    private void generateBSBMQuery6(String[] parameters, BufferedWriter w, BufferedWriter wc) throws IOException {
+        String param1 =  parameters[0];
+        String selectQuery = String.format(BSBMQuery6.select, param1);
+        w.write(selectQuery.replaceAll("\n", " "));
+        w.newLine();
+        String constructQuery = String.format(BSBMQuery6.construct, param1, param1);
+        wc.write(constructQuery.replaceAll("\n", " "));
+        wc.newLine();
+    }
+
+    private void generateBSBMQuery7(String[] parameters, BufferedWriter w, BufferedWriter wc) throws IOException {
+        String param1 = "<" + parameters[0] + ">";
+        String param2 = "<" + parameters[1] + ">";
+        String selectQuery = String.format(BSBMQuery7.select, param1, param1, param2, param1);
+        w.write(selectQuery.replaceAll("\n", " "));
+        w.newLine();
+        String constructQuery = String.format(BSBMQuery7.construct, param1, param1, param2, param1,
+                param1, param1, param2, param1);
+        wc.write(constructQuery.replaceAll("\n", " "));
+        wc.newLine();
+    }
+
+    private void generateBSBMQuery8(String[] parameters, BufferedWriter w, BufferedWriter wc) throws IOException {
+        String param1 = "<" + parameters[0] + ">";
+        String selectQuery = String.format(BSBMQuery8.select, param1);
+        w.write(selectQuery.replaceAll("\n", " "));
+        w.newLine();
+        String constructQuery = String.format(BSBMQuery8.construct, param1, param1);
+        wc.write(constructQuery.replaceAll("\n", " "));
+        wc.newLine();
+    }
+
+    private void generateBSBMQuery10(String[] parameters, BufferedWriter w, BufferedWriter wc) throws IOException {
+        String param1 = "<" + parameters[0] + ">";
+        String selectQuery = String.format(BSBMQuery10.select, param1);
+        w.write(selectQuery.replaceAll("\n", " "));
+        w.newLine();
+        String constructQuery = String.format(BSBMQuery10.construct, param1, param1);
         wc.write(constructQuery.replaceAll("\n", " "));
         wc.newLine();
     }
