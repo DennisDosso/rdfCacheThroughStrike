@@ -16,10 +16,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
 
+/** Imports a database. The args[0] should be the path of the properties file
+ * to read for the path*/
 public class ImportDatabase {
 
     public static void main(String[] args) {
-        ProjectPaths.init();
+        ProjectPaths.init(args);
+
         //goddammit log4j
         SilenceLog4J.silence();
         // directory where the .ttl files with the data to import are stored (the "fragments")
@@ -33,7 +36,7 @@ public class ImportDatabase {
 
         // open the database
         File dataDir = new File(databaseDirectory);
-        Repository db = new SailRepository(new NativeStore(dataDir, ""));
+        Repository db = new SailRepository(new NativeStore(dataDir, "spoc"));
         db.init();
         RepositoryConnection conn = db.getConnection();
 
@@ -59,6 +62,6 @@ public class ImportDatabase {
         conn.close();
         db.shutDown();
 
-
+        System.out.println("done");
     }
 }

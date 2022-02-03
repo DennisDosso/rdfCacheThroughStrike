@@ -12,6 +12,10 @@ import java.util.Map;
  * */
 public class ProjectPaths {
 
+    /** path of the file with the properties to be read.
+     * If nothing is provided, the default value id "properties/paths.properties"*/
+    public static String propertiesFilePath = "properties/paths.properties";
+
     /** path of the file containing the rdf database in some format, e.g. turtle
      * */
     public static String rdfFilePath;
@@ -43,7 +47,7 @@ public class ProjectPaths {
     public static String supportTextFile;
 
     public static void init() {
-        Map<String, String> map = ReadPropertyFile.doIt("properties/paths.properties");
+        Map<String, String> map = ReadPropertyFile.doIt(propertiesFilePath);
 
         rdfFilePath = map.get("rdfFilePath");
         ttlFilesDirectory = map.get("ttlFilesDirectory");
@@ -58,5 +62,15 @@ public class ProjectPaths {
         constructTimesFile = map.get("constructTimesFile");
         coolDownTimesFile = map.get("coolDownTimesFile");
         updateRDBTimesFile = map.get("updateRDBTimesFile");
+    }
+
+    public static void init(String[] args) {
+        if(args.length > 0) {
+            propertiesFilePath = args[0];
+            init();
+        } else {
+            propertiesFilePath = "properties/paths.properties";
+            init();
+        }
     }
 }
