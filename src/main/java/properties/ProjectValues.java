@@ -73,8 +73,11 @@ public class ProjectValues {
      * */
     public static boolean useSupportLineageCache = false;
 
+    /** A query that can be used to generate values used to build other queries
+     * */
+    public static String sparql_tuples_query = "";
 
-
+    public static boolean cleanCache = true;
 
     /** Data to access the PostgreSQL DB */
     public static String host = "localhost";
@@ -84,8 +87,12 @@ public class ProjectValues {
     public static String password = "Ulisse92";
     public static String schema = "public";
 
+    /** Path of the property file. By default, the value is properties/values.properties
+     * */
+    public static String propertyPath = "properties/values.properties";
+
     public static void init() {
-        Map<String, String> map = ReadPropertyFile.doIt("properties/values.properties");
+        Map<String, String> map = ReadPropertyFile.doIt(propertyPath);
 
         try{
             queriesToCreate = Integer.parseInt(map.get("queriesToCreate"));
@@ -106,6 +113,7 @@ public class ProjectValues {
             printCacheSize = Boolean.parseBoolean(map.get("printCacheSize"));
             existenceCheck = Boolean.parseBoolean(map.get("existenceCheck"));
             useSupportLineageCache = Boolean.parseBoolean(map.get("useSupportLineageCache"));
+            cleanCache = Boolean.parseBoolean(map.get("cleanCache"));
         } catch (Exception e) {
             System.err.println("[ERROR] check the values.properties file. Something is probably missing or wrong");
             queriesToCreate = 10;
@@ -126,6 +134,7 @@ public class ProjectValues {
             printCacheSize = true;
             existenceCheck = false;
             useSupportLineageCache = false;
+            cleanCache = true;
         }
 
         namedGraphName = map.get("namedGraphName");
@@ -136,6 +145,13 @@ public class ProjectValues {
         database = map.get("database");
         password = map.get("password");
         schema = map.get("schema");
+    }
+
+    public static void init(String arg) {
+        if(arg != null) {
+            propertyPath = arg;
+        }
+        init();
     }
 
     /** Use it to build the string necessary to connect to the PostgreSQL.

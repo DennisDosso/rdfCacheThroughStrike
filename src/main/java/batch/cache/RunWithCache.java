@@ -25,6 +25,23 @@ import java.util.concurrent.*;
 public class RunWithCache extends QueryingProcess  {
 
 
+    public RunWithCache(String[] args) {
+        super(args);
+
+        // open connection to cache
+        cacheRepositoryConnection = TripleStoreHandler.getConnection(ProjectPaths.cacheDirectory, TripleStoreHandler.CACHE);
+
+        // open file writers
+        try {
+            cacheFw = new FileWriter(ProjectPaths.cacheTimesFile, true);
+            constructFw = new FileWriter(ProjectPaths.constructTimesFile, true);
+            updateRDBFw = new FileWriter(ProjectPaths.updateRDBTimesFile, true);
+            coolDownWriter = new FileWriter(ProjectPaths.coolDownTimesFile, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public RunWithCache() {
         super();
 
@@ -93,6 +110,16 @@ public class RunWithCache extends QueryingProcess  {
         for(int i = -1; i < this.queryNumber; ++i) {
             selectQuery = selectReader.readLine();
             constructQuery = constructReader.readLine();
+        }
+
+        if(this.selectQuery == null) {
+            System.err.println("query not found");
+            System.exit(1);
+        }
+
+        if(this.constructQuery == null) {
+            System.err.println("query not found");
+            System.exit(1);
         }
     }
 
@@ -212,7 +239,7 @@ public class RunWithCache extends QueryingProcess  {
         Path constructIn = Paths.get(ProjectPaths.constructQueryFile);
         try(BufferedReader selectReader = Files.newBufferedReader(selectIn);
             BufferedReader constructReader = Files.newBufferedReader(constructIn)) {
-
+            // get the query that we are executing here
             this.getTheQueriesToPerform(selectReader, constructReader);
 
         } catch (IOException e) {
@@ -254,27 +281,30 @@ public class RunWithCache extends QueryingProcess  {
      * <br/>
      * It also computes the current epoch as floor(qurtyNumber / epochLength)*/
     public void setTimeframe() {
+        // degenerate case in which this is the very first query
         if(this.queryNumber == 0) {
             this.timeframe = 1;
             this.epoch = 1;
             return;
         }
 
+
         this.timeframe = (int) Math.ceil((float) this.queryNumber / ProjectValues.timeframeLenght );
         this.epoch = (int) Math.ceil((float) this.queryNumber / ProjectValues.epochLength) ;
+
+        if(this.queryNumber % 10 == 0 && this.executionTime == 0)
+            System.out.println("dealing with query " + this.queryNumber);
     }
 
 
-
-
     public static void main(String[] args) {
-        RunWithCache execution = new RunWithCache();
+        RunWithCache execution = new RunWithCache(args);
 
         // get the number of the query that we want to execute
         execution.queryNumber = Integer.parseInt(args[0]);
         // the current number of times we are executing this same query
         execution.executionTime = Integer.parseInt(args[1]);
-        // need to understand which is our current timeframe
+        // need to set some values, such as the current timeframe
         execution.setTimeframe();
         // run the query
         execution.execution();

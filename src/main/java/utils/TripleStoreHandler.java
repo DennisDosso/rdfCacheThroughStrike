@@ -22,7 +22,7 @@ import static org.eclipse.rdf4j.model.util.Values.iri;
 
 /**
  * Role of this class is to maintain the connection to an rdf4j index, perform queries etc.
- * Each connection need to have a string name, e.g. "MAIN" or "CACHE", so you can deal with
+ * Each connection need to have a string name, e.g. "DB" or "CACHE", so you can deal with
  * multiple singleton connections (e.g. when we need to connect both to the cache AND the
  * full database)
  *

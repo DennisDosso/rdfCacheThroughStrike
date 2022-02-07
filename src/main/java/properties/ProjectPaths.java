@@ -46,6 +46,10 @@ public class ProjectPaths {
      * when doing operations of update that are not executed at each query*/
     public static String supportTextFile;
 
+
+    /** File where results obtained from the whole DB are saved. Used when we compute statistics */
+    public static String wholeDBresultFile;
+
     public static void init() {
         Map<String, String> map = ReadPropertyFile.doIt(propertiesFilePath);
 
@@ -62,11 +66,12 @@ public class ProjectPaths {
         constructTimesFile = map.get("constructTimesFile");
         coolDownTimesFile = map.get("coolDownTimesFile");
         updateRDBTimesFile = map.get("updateRDBTimesFile");
+        wholeDBresultFile = map.get("wholeDBresultFile");
     }
 
-    public static void init(String[] args) {
-        if(args.length > 0) {
-            propertiesFilePath = args[0];
+    public static void init(String args) {
+        if(args != null) {
+            propertiesFilePath = args;
             init();
         } else {
             propertiesFilePath = "properties/paths.properties";

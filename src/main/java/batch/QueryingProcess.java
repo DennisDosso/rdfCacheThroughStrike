@@ -86,7 +86,32 @@ public class QueryingProcess {
      * */
     public int timeframe;
 
+    /** This constructor uses the third and fourth parameters of the args[] array
+     * as path, respectively, of the path.properties file and values.properties file
+     *
+     * */
+    public QueryingProcess(String[] args) {
+        // damn you, log4j -- this line is used to make log4j shut up with its nasty Debug prints
+        SilenceLog4J.silence();
 
+        if(args.length >= 4) {
+            ProjectPaths.init(args[2]);
+            ProjectValues.init(args[3]);
+        } else {
+            ProjectPaths.init();
+            ProjectValues.init();
+        }
+        // open repository to the relational database
+        try {
+            rdbConnection = PostgreHandler.getConnection(ProjectValues.produceJdbcString(), this.getClass().getName());
+        } catch (SQLException e) {
+            e.printStackTrace();
+//            System.exit(1);
+            System.err.println("[DEBUG]: need to check those values to connect to the database!");
+        }
+        // open connection to the main triple store database
+        repositoryConnection = TripleStoreHandler.getConnection(ProjectPaths.databaseIndexDirectory, TripleStoreHandler.DB);
+    }
 
     public QueryingProcess()  {
         // damn you, log4j -- this line is used to make log4j shut up with its nasty Debug prints

@@ -75,5 +75,36 @@ public class BSBMQuery7 {
             " OPTIONAL { ?review bsbm:rating2 ?rating2 . } \n" +
             " }\n" +
             "} ";
-//            "LIMIT 100"; // no limit for now
+//            "LIMIT 100"; // no limit for now -- the original query did not have one
+
+	public static final String building_values_query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+			"PREFIX rev: <http://purl.org/stuff/rev#>\n" +
+			"PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+			"PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+			"PREFIX dc: <http://purl.org/dc/elements/1.1/>\n" +
+			"PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>\n" +
+			"\n" +
+			"SELECT distinct ?pxyz ?country\n" +
+			"WHERE {\n" +
+			"?pxyz rdfs:label ?productLabel .\n" +
+			"# OPTIONAL {\n" +
+			"?offer bsbm:product ?pxyz .\n" +
+			"?offer bsbm:price ?price .\n" +
+			"?offer bsbm:vendor ?vendor .\n" +
+			"?vendor rdfs:label ?vendorTitle .\n" +
+			"?vendor bsbm:country ?country .\n" +
+			"?offer dc:publisher ?vendor .\n" +
+			"?offer bsbm:validTo ?date .\n" +
+			"FILTER (?date > \"2008-03-01\"^^xsd:dateTime )\n" +
+			"# }\n" +
+			"OPTIONAL {\n" +
+			"?review bsbm:reviewFor ?xyz .\n" +
+			"?review rev:reviewer ?reviewer .\n" +
+			"?reviewer foaf:name ?revName .\n" +
+			"?review dc:title ?revTitle .\n" +
+			"OPTIONAL { ?review bsbm:rating1 ?rating1 . }\n" +
+			"OPTIONAL { ?review bsbm:rating2 ?rating2 . }\n" +
+			"}\n" +
+			"}\n" +
+			"LIMIT 100";
 }

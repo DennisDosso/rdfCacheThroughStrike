@@ -1,16 +1,11 @@
 package batch.wholedb;
 
 import batch.QueryingProcess;
-import org.eclipse.rdf4j.query.TupleQuery;
-import org.eclipse.rdf4j.query.TupleQueryResult;
-import org.eclipse.rdf4j.repository.RepositoryConnection;
 import properties.ProjectPaths;
 import utils.ReturnBox;
-import utils.SilenceLog4J;
 import utils.TripleStoreHandler;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,7 +17,18 @@ import java.sql.SQLException;
  * */
 public class RunOnWholeDB extends QueryingProcess {
 
-
+    /** This constructur uses the third and fourth parameter of args[]
+     * to set the path of the paths and values property files
+     * */
+    public RunOnWholeDB(String[] args) {
+        super(args);
+        try {
+            this.wholeDbFw = new FileWriter(ProjectPaths.wholeDbTimesFile, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
+    }
 
     public RunOnWholeDB() {
         super();
@@ -57,6 +63,10 @@ public class RunOnWholeDB extends QueryingProcess {
             e.printStackTrace();
         }
         // if we are here the field this.selectQuery has the correct select query. We can proceed
+        if(this.selectQuery == null) {
+            System.err.println("we reached the end of file");
+            System.exit(1);
+        }
     }
 
     private void close() {
@@ -78,10 +88,14 @@ public class RunOnWholeDB extends QueryingProcess {
 
 
     public static void main(String[] args) throws IOException {
-        RunOnWholeDB execution = new RunOnWholeDB();
+        RunOnWholeDB execution = new RunOnWholeDB(args);
 
         execution.queryNumber = Integer.parseInt(args[0]);
         execution.executionTime = Integer.parseInt(args[1]);
+
+        // a little bit of progress showing
+        if(execution.queryNumber % 10 == 0 && execution.executionTime == 0)
+            System.out.println("Running query number: " + execution.queryNumber);
 
         ReturnBox res = execution.runOneQuery();
 

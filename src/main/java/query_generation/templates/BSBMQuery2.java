@@ -67,4 +67,29 @@ public class BSBMQuery2 {
             " OPTIONAL { %s bsbm:productPropertyTextual5 ?propertyTextual5 }\n" + //25
             " OPTIONAL { %s bsbm:productPropertyNumeric4 ?propertyNumeric4 }\n" + //26
             "} LIMIT 100";
+
+    public static String building_values_query = "PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\n" +
+            "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+            "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+            "PREFIX dc: <http://purl.org/dc/elements/1.1/>\n" +
+            "\n" +
+            "SELECT distinct ?product\n" +
+            "WHERE {\n" +
+            "?product rdfs:label ?label .\n" +
+            "?product rdfs:comment ?comment .\n" +
+            "?product bsbm:producer ?p .\n" +
+            "?p rdfs:label ?producer .\n" +
+            "?product dc:publisher ?p .\n" +
+            "?product bsbm:productFeature ?f .\n" +
+            "?f rdfs:label ?productFeature .\n" +
+            "?product bsbm:productPropertyTextual1 ?propertyTextual1 .\n" +
+            "?product bsbm:productPropertyTextual2 ?propertyTextual2 .\n" +
+            "?product bsbm:productPropertyTextual3 ?propertyTextual3 .\n" +
+            "?product bsbm:productPropertyNumeric1 ?propertyNumeric1 .\n" +
+            "?product bsbm:productPropertyNumeric2 ?propertyNumeric2 .\n" +
+            "OPTIONAL { ?product bsbm:productPropertyTextual4 ?propertyTextual4 }\n" +
+            "OPTIONAL { ?product bsbm:productPropertyTextual5 ?propertyTextual5 }\n" +
+            "OPTIONAL { ?product bsbm:productPropertyNumeric4 ?propertyNumeric4 }\n" +
+            "}\n" +
+            "LIMIT 1000";
 }

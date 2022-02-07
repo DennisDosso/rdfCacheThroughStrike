@@ -15,6 +15,7 @@
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/querying/bsbm/construct/ConstructQuery1.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/SilenceLog4J.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/TripleStoreHandler.java
+/Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/FindAndPrintQueryValues.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/ReturnBox.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/PrepareObjectForQuery.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery5.java

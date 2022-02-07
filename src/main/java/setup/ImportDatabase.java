@@ -21,7 +21,11 @@ import java.util.Collection;
 public class ImportDatabase {
 
     public static void main(String[] args) {
-        ProjectPaths.init(args);
+        if(args.length > 0) {
+            ProjectPaths.init(args[0]);
+        } else {
+            ProjectPaths.init();
+        }
 
         //goddammit log4j
         SilenceLog4J.silence();

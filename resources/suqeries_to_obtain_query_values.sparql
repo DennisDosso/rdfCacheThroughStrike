@@ -96,7 +96,7 @@ LIMIT 1000
 
 
 # for query 6
-SELECT ?label
+SELECT distinct ?label
 WHERE {
 ?product rdfs:label ?label .
 ?product rdf:type bsbm:Product .
@@ -155,5 +155,24 @@ OPTIONAL { ?review bsbm:rating1 ?rating1 . }
 OPTIONAL { ?review bsbm:rating2 ?rating2 . }
 OPTIONAL { ?review bsbm:rating3 ?rating3 . }
 OPTIONAL { ?review bsbm:rating4 ?rating4 . }
+}
+LIMIT 1000
+
+# query 10
+PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>
+PREFIX xsd: <http://www.w3.org/2001/XMLSchema#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+
+SELECT DISTINCT ?productXYZ
+WHERE {
+?offer bsbm:product ?productXYZ .
+?offer bsbm:vendor ?vendor .
+?offer dc:publisher ?vendor .
+?vendor bsbm:country <http://downlode.org/rdf/iso-3166/countries#US> .
+?offer bsbm:deliveryDays ?deliveryDays .
+FILTER (?deliveryDays <= 3)
+?offer bsbm:price ?price .
+?offer bsbm:validTo ?date .
+FILTER (?date > "2008-02-10T00:00:00"^^xsd:dateTime )
 }
 LIMIT 1000

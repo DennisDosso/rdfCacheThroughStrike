@@ -44,6 +44,27 @@ public class BSBMQuery1 {
 			" ?product bsbm:productFeature %s . \n" +
 			" ?product bsbm:productPropertyNumeric1 ?value1 . \n" +
 			"	FILTER (?value1 > 50) \n" +
-			"	}\n" ;
+			"	}" +
+			"ORDER BY ?label\n" +
+			"LIMIT 50" ;
+
+	public static String building_values_query =
+			"PREFIX bsbm-inst: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/instances/>\n" +
+					"PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+					"PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+					"PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+					"\n" +
+					"SELECT DISTINCT ?prodType ?prodFeat1 ?prodFeat2\n" +
+					"WHERE {\n" +
+					" ?product rdfs:label ?label .\n" +
+					" ?product a ?prodType.\n" +
+					" ?product bsbm:productFeature ?prodFeat1 .\n" +
+					" ?product bsbm:productFeature ?prodFeat2 .\n" +
+					"?product bsbm:productPropertyNumeric1 ?value1 .\n" +
+					"\tFILTER (?value1 > 50)\n" +
+					"    FILTER (?prodFeat1 != ?prodFeat2)\n" +
+					"\t}\n" +
+					"# ORDER BY ?label\n" +
+					"LIMIT 1000";
 
 }

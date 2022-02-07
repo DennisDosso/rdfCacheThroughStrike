@@ -21,7 +21,7 @@ public class BSBMQuery8 {
             "	OPTIONAL { ?review bsbm:rating4 ?rating4 . }\n" +
             "}\n" +
 			"ORDER BY DESC(?reviewDate)\n" +
-            "LIMIT 5"
+            "LIMIT 20"
             ;
 
     public static String construct = "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
@@ -54,6 +54,27 @@ public class BSBMQuery8 {
             "	OPTIONAL { ?review bsbm:rating4 ?rating4 . }\n" +
             "}\n" +
 			"ORDER BY DESC(?reviewDate)" +
-            "LIMIT 50";
+            "LIMIT 200";
+
+    public static final String building_values_query = "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+            "PREFIX dc: <http://purl.org/dc/elements/1.1/>\n" +
+            "PREFIX rev: <http://purl.org/stuff/rev#>\n" +
+            "PREFIX foaf: <http://xmlns.com/foaf/0.1/>\n" +
+            "\n" +
+            "SELECT distinct ?pxyz\n" +
+            "WHERE {\n" +
+            "?review bsbm:reviewFor ?pxyz .\n" +
+            "?review dc:title ?title .\n" +
+            "?review rev:text ?text .\n" +
+            "FILTER langMatches( lang(?text), \"EN\" )\n" +
+            "?review bsbm:reviewDate ?reviewDate .\n" +
+            "?review rev:reviewer ?reviewer .\n" +
+            "?reviewer foaf:name ?reviewerName .\n" +
+            "OPTIONAL { ?review bsbm:rating1 ?rating1 . }\n" +
+            "OPTIONAL { ?review bsbm:rating2 ?rating2 . }\n" +
+            "OPTIONAL { ?review bsbm:rating3 ?rating3 . }\n" +
+            "OPTIONAL { ?review bsbm:rating4 ?rating4 . }\n" +
+            "}\n" +
+            "LIMIT 1000";
 
 }

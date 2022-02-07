@@ -75,6 +75,7 @@ Properties to set:
 * queryBuildingValuesFile: file where to find the values that "create" the queries of one class
 * selectQueryFile: the path of the file where to print the queries (one per line)
 * databaseIndexDirectory: path of the directory containing the rdf4j database.
+
 * whichQueryTypeToCreate: a string identifying the query type we want to create. This can have one of the following values
   (or no query will be built):
   * ONE: class 1 of the BSBM queries
@@ -84,6 +85,7 @@ Properties to set:
   * SEVEN
   * EIGHT
   * TEN
+* alpha: parameter to decide the normal distribution that generates the queries. The bigger, the more concentrated around the mean (20) 
 
 
 
@@ -122,10 +124,18 @@ Properties to set:
 In the file
 <code>paths.properties</code> 
 
-
 * databaseIndexDirectory: path of the directory containing the rdf4j database.
 * selectQueryFile: the path of the file where to find the queries (one per line)
 * wholeDbTimesFile: path of the file where to write the results of the execution on the whole database
+
+in-line parameters:
+* 1: the id of the query (a number starting from 0, going up)
+* 2: the time we execute this query. In fact, usually we wxecute the same query many times, typically 10. This is a number
+going from 0 to 9 usually indicating what time this is we are executing the same query. 0 means it is the first time,
+1 that it is the second, etc.
+* 3: path of the path.properties file. If no path is given, the default 'properties/path.properties' is used
+* 4: path of the values.properties file. As above, if no path is given, the default 'properties/values.properties' is used.
+This may create some FileNotFoundException if you are not careful.
 
 
 ### Step 3: Experiments using the cache
@@ -151,9 +161,10 @@ done
 The properties to set are many and the following:
 
 From the file values.properties
+* cleanTheCache: set to true if we need to clean the cache at the beginning of the process
 * timeoutSelectQueries: the time allowed to perform a select query (in ms). Usually 30000
 * timeoutConstructQueries: the time allowed to perform a construct query to compute provenance (in ms). Usually 30000
-* timeoutUpdateRDB: time allowed to update the supporting relational database
+* timeoutUpdateRDB: maximum time allowed to update the supporting relational database
 * epochLength: the number of queries composing an epoch. 
 * timesOneQueryIsExecuted=10 
 * namedGraphName=name 
@@ -164,6 +175,17 @@ From the file values.properties
 * timeframes=1 
 * timeframesRequired: set to true if the experiments needs to use the cooldown strategy
 * indexes: the rdf4j indexes that we are using in our database. For example: "spoc,psoc" (provide them as csv)
+
+From the file path.properties
+* databaseIndexDirectory: directory of the database
+* cacheDirectory: directory of the cache
+* selectQueryFile: where to take the select queries
+* constructQueryFile: where to take the construct queries
+* cacheTimesFile: where to write the results for the cache
+* constructTimesFile: where to write the times for the construct/provenance operation
+* updateRDBTimesFile: where to write the times for the operation of update of the cache and relational db
+* coolDownTimesFile: where to write the times required to operate the cooldown operation
+* supportTextFile: txt file where to write the construct queries that will create the provenances
 
 
 

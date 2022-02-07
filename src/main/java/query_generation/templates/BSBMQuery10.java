@@ -18,7 +18,7 @@ public class BSBMQuery10 {
             " FILTER (?date > \"2008-02-10T00:00:00\"^^xsd:dateTime )\n" +
             "}\n" +
 			"ORDER BY xsd:double(str(?price))\n" +
-            "LIMIT 5";
+            "LIMIT 10";
 
     public static String construct = "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
             "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n" +
@@ -45,4 +45,23 @@ public class BSBMQuery10 {
             "}\n" +
 			"ORDER BY xsd:double(str(?price)) \n" +
             "LIMIT 70";
+
+    public static final String building_values_query =
+            "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+            "PREFIX xsd: <http://www.w3.org/2001/XMLSchema#> \n" +
+            "PREFIX dc: <http://purl.org/dc/elements/1.1/>\n" +
+            "\n" +
+            "SELECT DISTINCT ?productXYZ\n" +
+            "WHERE {\n" +
+            "\t?offer bsbm:product ?productXYZ .\n" +
+            "\t?offer bsbm:vendor ?vendor .\n" +
+            " ?offer dc:publisher ?vendor .\n" +
+            "\t?vendor bsbm:country <http://downlode.org/rdf/iso-3166/countries#US> .\n" +
+            "\t?offer bsbm:deliveryDays ?deliveryDays .\n" +
+            "\tFILTER (?deliveryDays <= 3)\n" +
+            "\t?offer bsbm:price ?price .\n" +
+            " ?offer bsbm:validTo ?date .\n" +
+            " FILTER (?date > \"2008-02-10T00:00:00\"^^xsd:dateTime )\n" +
+            "}\n" +
+            "LIMIT 1000";
 }

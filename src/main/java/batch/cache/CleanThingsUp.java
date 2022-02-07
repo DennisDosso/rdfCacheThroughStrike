@@ -14,13 +14,32 @@ import java.sql.SQLException;
  * <p>
  * This method does just that, and it should be invoked in the bash file before everything else.
  * </p>
- *
+ *<p>
+ *     In-line parameters: 1) the path of the paths.properties file, 2) the path of the values.properties file.
+ *     If nothing is passed, the default paths properties/paths.properties and properties/values.properties
+ *     are used.
+ *</p>
+ * <p>
+ *     Used properties:
+ *     <li>cleanCache</li> (tell me if you want to delete or not)
+ *     <li>cacheDirectory</li> (deletes the cache, the content in the directory)
+ *     <li>RDB values</li> (deletes the relational database)
+ * </p>
  * */
 public class CleanThingsUp {
 
     public static void main(String[] args) {
-        ProjectPaths.init();
-        ProjectValues.init();
+        if(args.length >= 2) {
+            ProjectPaths.init(args[0]);
+            ProjectValues.init(args[1]);
+        } else {
+            ProjectPaths.init();
+            ProjectValues.init();
+        }
+
+        if(ProjectValues.cleanCache) {
+            return;
+        }
 
         // delete the cache database in the disk
         try {
