@@ -1,5 +1,6 @@
 package threads;
 
+import batch.QueryVault;
 import batch.QueryingProcess;
 
 import properties.ProjectValues;
@@ -13,9 +14,9 @@ import java.util.concurrent.Callable;
 
 public class DealWithCapOnTheCacheBashThread implements Callable<ReturnBox>  {
 
-    private QueryingProcess process;
+    private QueryVault process;
 
-    public DealWithCapOnTheCacheBashThread(QueryingProcess qp) {
+    public DealWithCapOnTheCacheBashThread(QueryVault qp) {
         this.process = qp;
     }
 

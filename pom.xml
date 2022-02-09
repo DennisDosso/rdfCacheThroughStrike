@@ -222,6 +222,12 @@
             <version>1.7</version>
         </dependency>
 
+<!--        To be able to deal with parametrized command line parameters-->
+        <dependency>
+            <groupId>com.beust</groupId>
+            <artifactId>jcommander</artifactId>
+            <version>1.78</version>
+        </dependency>
 
 
     </dependencies>

@@ -6,6 +6,7 @@ batch/wholedb/RunOnWholeDB.class
 threads/DealWithCapOnTheCacheBashThread.class
 threads/QueryDiskCacheThread.class
 utils/ReturnBox.class
+batch/wholedb/RunOnWholeDBwParam.class
 batch/printutil/PrintOneLineBatch.class
 utils/StripObjectFromDatatype.class
 properties/ProjectPaths.class

@@ -89,6 +89,13 @@ public class RunWithCache extends QueryingProcess  {
         }
 
         try {
+            updateRDBFw.flush();
+            updateRDBFw.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
             coolDownWriter.flush();
             coolDownWriter.close();
         } catch (IOException e) {
@@ -138,6 +145,7 @@ public class RunWithCache extends QueryingProcess  {
             result = future.get(ProjectValues.timeoutSelectQueries, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
             result.foundSomething = false;
+            result.inTime = false;
         } finally {
             if(!future.isDone())
                 future.cancel(true);
@@ -187,8 +195,10 @@ public class RunWithCache extends QueryingProcess  {
             rb = this.updateRDBPhaseWithOneLineage(lineage);
         }
         long elapsed = System.currentTimeMillis() - start;
+        System.out.println("[DEBUG] elapsed time to update the database: " + elapsed);
 
-        // if required, count how big the cache now is
+
+        // if required, count how big the cache is now
         int cacheSize = 0;
         if(ProjectValues.printCacheSize) {
             cacheSize = this.checkCacheSize();
@@ -197,6 +207,7 @@ public class RunWithCache extends QueryingProcess  {
         // print the time required to update the RDB and its dimension
         try {
             updateRDBFw.write(this.epoch + "," + elapsed + "," + cacheSize + "\n");
+            updateRDBFw.flush();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -308,6 +319,7 @@ public class RunWithCache extends QueryingProcess  {
         execution.setTimeframe();
         // run the query
         execution.execution();
+
         execution.closeDown();
     }
 }

@@ -49,6 +49,16 @@ public class ProjectPaths {
 
     /** File where results obtained from the whole DB are saved. Used when we compute statistics */
     public static String wholeDBresultFile;
+    /** File where results obtained from the execution on cache are stored. Used to compute statistics */
+    public static String cacheResultFile;
+
+    /** Value added to deal with multiple executions.
+     * The master directory is a starting directory from where we can read/write the things that we need*/
+    public static String masterDirectory;
+
+    /** a string representing the current query class.
+     * Used to build the paths of this class*/
+    public static String currentQueryClass;
 
     public static void init() {
         Map<String, String> map = ReadPropertyFile.doIt(propertiesFilePath);
@@ -67,6 +77,7 @@ public class ProjectPaths {
         coolDownTimesFile = map.get("coolDownTimesFile");
         updateRDBTimesFile = map.get("updateRDBTimesFile");
         wholeDBresultFile = map.get("wholeDBresultFile");
+        cacheResultFile = map.get("cacheResultFile");
     }
 
     public static void init(String args) {
@@ -77,5 +88,34 @@ public class ProjectPaths {
             propertiesFilePath = "properties/paths.properties";
             init();
         }
+    }
+
+    /** This init method uses only the base directory masterDir to build all the other paths.
+     * You need however to follow the type of file system as described by the below description,
+     * or it won't work.
+     * */
+    public static void masterInit(String masterDir, String cQC) {
+//        propertiesFilePath = pathsPath;
+        masterDirectory = masterDir;
+        currentQueryClass = cQC;
+
+        // first, get information from our properties
+        rdfFilePath = masterDirectory + "/turtle/dataset.ttl";
+        ttlFilesDirectory = masterDirectory + "/turtle/";
+        databaseIndexDirectory = masterDirectory + "/db";
+        queryBuildingValuesFile = masterDirectory + "/building_query_values";
+        selectQueryFile = masterDirectory + "/queries/Q" + currentQueryClass + ".txt";
+        constructQueryFile = masterDirectory + "/queries/construct_Q" + currentQueryClass + ".txt";
+        cacheDirectory = masterDirectory + "/cache";
+        wholeDbTimesFile = masterDirectory + "/results/whole_db/Q" + currentQueryClass +"_whole_db_results.txt";
+        cacheTimesFile = masterDirectory + "/results/cache/Q" + currentQueryClass + "_cache_times.txt";
+        supportTextFile = masterDirectory + "/results/cache/support_query_file.txt";
+        constructTimesFile = masterDirectory + "/results/cache/Q" + currentQueryClass + "_construct_times.txt";;
+        coolDownTimesFile = masterDirectory + "/results/cache/Q" + currentQueryClass + "_cool_down_times.txt";;
+        updateRDBTimesFile = masterDirectory + "/results/cache/Q" + currentQueryClass + "_rdb_times.txt";;
+
+        wholeDBresultFile = wholeDbTimesFile;
+        cacheResultFile = updateRDBTimesFile;
+
     }
 }

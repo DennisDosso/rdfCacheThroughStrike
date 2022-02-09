@@ -6,7 +6,7 @@ public class BSBMQuery5 {
             "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
             "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
             "\n" +
-            "SELECT DISTINCT ??product ?productLabel\n" +
+            "SELECT DISTINCT ?product ?productLabel\n" +
             "WHERE { \n" +
             "?product rdfs:label ?productLabel .\n" +
             "    FILTER (%s != ?product)\n" + // param1

@@ -1,5 +1,6 @@
 package threads;
 
+import batch.QueryVault;
 import batch.QueryingProcess;
 import properties.ProjectValues;
 import utils.ReturnBox;
@@ -29,14 +30,14 @@ import java.util.concurrent.Callable;
 public class UpdateRDBDatabaseWithTriplesFromLineageThread implements Callable<ReturnBox> {
 
     /** the process that called this thread*/
-    private QueryingProcess process;
+    private QueryVault process;
     /** A list of strings (arrays made of three strings each: subject, predicate, object) that
      * represent the lineage of a SPARQL query
      *
      * */
     private List<String[]> lineage;
 
-    public UpdateRDBDatabaseWithTriplesFromLineageThread(QueryingProcess p, List<String[]> l) {
+    public UpdateRDBDatabaseWithTriplesFromLineageThread(QueryVault p, List<String[]> l) {
         this.process = p;
         this.lineage = l;
     }

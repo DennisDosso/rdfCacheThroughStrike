@@ -11,6 +11,9 @@ public class ReturnBox {
 
 	public long queryTime;
 
+	/** Set this to true if we completed our execution in time
+	 * */
+	public boolean inTime;
 
 	public long nanoTime;
 	
@@ -28,5 +31,6 @@ public class ReturnBox {
 
 	public ReturnBox() {
 		this.resultSetSize = 0;
+		this.inTime = true;
 	}
 }

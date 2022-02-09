@@ -1,5 +1,6 @@
 package threads;
 
+import batch.QueryVault;
 import batch.QueryingProcess;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
@@ -14,9 +15,9 @@ import java.util.concurrent.Callable;
  * */
 public class QueryWholeDBThread implements Callable<ReturnBox>  {
 
-    private QueryingProcess process;
+    private QueryVault process;
 
-    public QueryWholeDBThread(QueryingProcess qp) {
+    public QueryWholeDBThread(QueryVault qp) {
         this.process = qp;
     }
 

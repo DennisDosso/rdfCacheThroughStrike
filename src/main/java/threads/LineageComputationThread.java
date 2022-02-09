@@ -1,5 +1,6 @@
 package threads;
 
+import batch.QueryVault;
 import batch.QueryingProcess;
 import utils.ReturnBox;
 
@@ -8,9 +9,9 @@ import java.util.concurrent.Callable;
 
 public class LineageComputationThread implements Callable<ReturnBox>  {
 
-    private QueryingProcess process;
+    private QueryVault process;
 
-    public LineageComputationThread(QueryingProcess p) {
+    public LineageComputationThread(QueryVault p) {
         this.process = p;
     }
 

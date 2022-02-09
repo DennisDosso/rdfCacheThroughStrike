@@ -79,6 +79,11 @@ public class ProjectValues {
 
     public static boolean cleanCache = true;
 
+    /** a number representing the total number of queries executed during an experiment.
+     * Used to compute statistics.
+     * */
+    public static int queriesToCheck;
+
     /** Data to access the PostgreSQL DB */
     public static String host = "localhost";
     public static String port = "5432";
@@ -114,6 +119,7 @@ public class ProjectValues {
             existenceCheck = Boolean.parseBoolean(map.get("existenceCheck"));
             useSupportLineageCache = Boolean.parseBoolean(map.get("useSupportLineageCache"));
             cleanCache = Boolean.parseBoolean(map.get("cleanCache"));
+            queriesToCheck = Integer.parseInt(map.get("queriesToCheck"));
         } catch (Exception e) {
             System.err.println("[ERROR] check the values.properties file. Something is probably missing or wrong");
             queriesToCreate = 10;

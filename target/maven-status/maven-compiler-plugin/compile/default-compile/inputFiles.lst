@@ -17,6 +17,7 @@
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/TripleStoreHandler.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/FindAndPrintQueryValues.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/ReturnBox.java
+/Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/NumberUtils.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/PrepareObjectForQuery.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery5.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/batch/QueryingProcess.java
@@ -24,6 +25,7 @@
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery3.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/querying/bsbm/select/GeneralSelect.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery8.java
+/Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/statistics/ComputeAverageQueryTime.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery6.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/threads/QueryDiskCacheThread.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/threads/LineageComputationThread.java

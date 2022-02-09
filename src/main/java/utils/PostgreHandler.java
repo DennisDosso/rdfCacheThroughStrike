@@ -43,6 +43,7 @@ public class PostgreHandler {
 
         if(owner != null && owner.equals(owner_)) {
             connection.close();
+            owner = null;
         }
     }
 
@@ -54,5 +55,6 @@ public class PostgreHandler {
         if(connection.isClosed())
             return;
         connection.close();
+        owner = null;
     }
 }
