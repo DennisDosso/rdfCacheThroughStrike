@@ -1,11 +1,9 @@
 package threads;
 
-import batch.QueryingProcess;
-
+import batch.QueryVault;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import utils.ReturnBox;
-import utils.TripleStoreHandler;
 
 import java.util.concurrent.Callable;
 
@@ -13,9 +11,9 @@ import java.util.concurrent.Callable;
  * */
 public class QueryDiskCacheThread implements Callable<ReturnBox>  {
 
-    private QueryingProcess process;
+    private QueryVault process;
 
-    public QueryDiskCacheThread(QueryingProcess p) {
+    public QueryDiskCacheThread(QueryVault p) {
         this.process = p;
     }
 

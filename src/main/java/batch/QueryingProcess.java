@@ -33,9 +33,6 @@ import java.util.concurrent.*;
  * It contains methods and fields that are used many times*/
 public class QueryingProcess extends QueryVault {
 
-    /** Connection to a cache. This value is NOT initialized in the constructor */
-    public RepositoryConnection cacheRepositoryConnection;
-
 
     /** Use this file writer to write down the times obtained from the whole DB without the use
      * of any optimization by our parts

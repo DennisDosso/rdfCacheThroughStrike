@@ -7,6 +7,7 @@ import utils.ReturnBox;
 import utils.TripleStoreHandler;
 
 import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -18,6 +19,19 @@ public class RunOnWholeDBwParam extends QueryingProcessParam {
 
     public RunOnWholeDBwParam() {
         super();
+    }
+
+    /** Use this method after having read the input parameters to
+     * set up all the neessary fields
+     * */
+    public void init() {
+        super.init();
+        try {
+            this.wholeDbFw = new FileWriter(ProjectPaths.wholeDbTimesFile, true);
+        } catch (IOException e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     /** Runs one query on the whole database in the context of a call from a bash script.

@@ -51,6 +51,9 @@ public class QueryVault {
      * compute the cooldown strategy */
     protected FileWriter coolDownWriter;
 
+    /** Connection to a cache. This value is NOT initialized in the constructor */
+    public RepositoryConnection cacheRepositoryConnection;
+
     /** Given a triple in the form of a string array made of a subject, a predicate
      * and an object, checks in the RDB if this triple is already present or not.
      * */
