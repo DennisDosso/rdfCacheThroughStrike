@@ -19,17 +19,19 @@ import java.util.List;
 /** Given a csv file containing the required values that make up a query,
  * it uses it to write these same queries, one line at a time, in another file
  * <p> Writes two files containing SPARQL SELECT and CONSTRUCT queries.
- *      It uses the property ProjectValues.queriesToCreate to know how many queries to create,
- *      the property outputSelectQueryFile to know where to write the select queries,
- *      the property outputConstructQueryFile to know where to write the construct queries,
- *      the property whichQueryTypeToCreate to know which query type we want to create (e.g., ONE
- *      for query of type 1 in the BSBM case)
- *      and queryBuildingValuesFile to get the values necessary to build the queries.
+ *      It uses these properties:
+ *      <ul>
+ *          <li>ProjectValues.queriesToCreate to know how many queries to create,</li>
+ *          <li>the property selectQueryFile to know where to write the select queries,</li>
+ *          <li>constructQueryFile to know where to write the construct queries,</li>
+ *          <li>whichQueryTypeToCreate to know which query type we want to create (e.g., ONE
+ *  *      for query of type 1 in the BSBM case)</li>
+ *         <li>alpha</li>
+ *         <li>queryBuildingValuesFile path of the file where to find the values used to build the queries</li>
+ *      </ul>
  *      </p>
  * */
 public class GenerateQueries {
-
-
 
     String databaseIndexDirectory;
     /** File where the values (obtained through another SELECT query from GraphDB, for example) used to

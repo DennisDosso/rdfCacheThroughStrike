@@ -31,41 +31,11 @@ import java.util.concurrent.*;
 
 /** Class that represents a generic process of querying.
  * It contains methods and fields that are used many times.
- * This version of the class uses parametwers passed in-line thus to be
+ * This version of the class uses parameters passed in-line thus to be
  * used more easily with SLURM
  *
  * */
 public class QueryingProcessParam extends QueryVault {
-
-    public Connection rdbConnection;
-
-    /** The connection to the main RDF database*/
-    public RepositoryConnection repositoryConnection;
-
-    /** Connection to a cache. This value is NOT initialized in the constructor */
-    public RepositoryConnection cacheRepositoryConnection;
-
-    /** The queries that we use. There is a select version and a construct version*/
-    public String selectQuery, constructQuery;
-
-    /** number of the query in the list of queries in the file that we use that we want to execute*/
-    @Parameter(
-            names = {"--query_number", "-QN"},
-            description = "The number of the query we are executing",
-            arity = 1,
-            required = true
-    )
-    public int queryNumber;
-
-
-    /** Number that represents the execution at which we are now.*/
-    @Parameter(
-            names = {"--execution_time", "-ET"},
-            description = "How many times have we already executed this query?",
-            arity = 1,
-            required = true
-    )
-    public int executionTime;
 
     /** Use this file writer to write down the times obtained from the whole DB without the use
      * of any optimization by our parts
@@ -135,6 +105,18 @@ public class QueryingProcessParam extends QueryVault {
     )
     public String queryClass;
 
+
+    /** A string that represents the schema of the support relational database that we want to use
+     * */
+    @Parameter(
+            names = {"--schema", "-S"},
+            description = "A string that represents the schema of the support relational database that we want to use",
+            arity = 1
+    )
+    public String db_schema;
+
+
+
     /** Empty constructor. First we use the input parameters, then we use the {@link setup} method to initialize the parameters
      * .
      * */
@@ -172,12 +154,13 @@ public class QueryingProcessParam extends QueryVault {
 
         future = executor.submit(new QueryWholeDBThread(this));
         ReturnBox result = new ReturnBox();
-        long start = System.nanoTime();
+        long start = System.currentTimeMillis();
         try{
             result = future.get(ProjectValues.timeoutSelectQueries, TimeUnit.MILLISECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            result.queryTime = System.nanoTime() - start;
+            result.queryTime = System.currentTimeMillis() - start;
             result.inTime = false;
+            e.printStackTrace();
         } finally {
             if(!future.isDone())
                 future.cancel(true);
@@ -255,7 +238,7 @@ public class QueryingProcessParam extends QueryVault {
             box = future.get(ProjectValues.timeoutConstructQueries, TimeUnit.MILLISECONDS);
         }  catch (ExecutionException | InterruptedException | TimeoutException e) {
             box.foundSomething = false;
-            box.nanoTime = System.currentTimeMillis() - start;
+            box.queryTime = System.currentTimeMillis() - start;
         } finally { // in any case, either we completed or not, the process is closed
             if(!future.isDone())
                 future.cancel(true);
@@ -327,7 +310,6 @@ public class QueryingProcessParam extends QueryVault {
      *
      * */
     protected void computeLineages(List<List<String[]>> lineageBuffer) {
-
         // open the file that we used as "database" to store the queries
         try(BufferedReader reader = Files.newBufferedReader(Paths.get(ProjectPaths.supportTextFile))) {
             String line = ""; // string that will contain the query
@@ -356,9 +338,10 @@ public class QueryingProcessParam extends QueryVault {
                     // write down the time required to compute this lineage
                     this.writeDownResultsAboutLineage(constructBox.queryTime);
                     // add the lineage to the buffer
-                    if(constructBox.foundSomething) {
+                    if(constructBox.foundSomething ) {
                         lineageBuffer.add(constructBox.lineage);
-                        this.addLineageToRDBCacheForNextTime(constructBox.lineage);
+                        if(ProjectValues.useSupportLineageCache) // update the cache containing the lineages
+                            this.addLineageToRDBCacheForNextTime(constructBox.lineage);
                     }
                 }
             } // end of the queries
@@ -420,7 +403,7 @@ public class QueryingProcessParam extends QueryVault {
             MessageDigest mDigest = MessageDigest.getInstance("SHA-256");
             mDigest.update(this.constructQuery.getBytes());
             queryHash = new String(mDigest.digest());
-
+            queryHash = queryHash.replaceAll("\\u0000", ""); // remove the null characters from our strings
         } catch (NoSuchAlgorithmException e) {
             System.err.println("No such algorithm as SHA-256 here");
             e.printStackTrace();
@@ -438,6 +421,7 @@ public class QueryingProcessParam extends QueryVault {
             ps.executeBatch();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            throwables.getNextException();
         }
 
 
@@ -457,6 +441,7 @@ public class QueryingProcessParam extends QueryVault {
             MessageDigest mDigest = MessageDigest.getInstance("SHA-256");
             mDigest.update(this.constructQuery.getBytes());
             queryHash = new String(mDigest.digest());
+            queryHash = queryHash.replaceAll("\\u0000", ""); // remove the null characters from our strings
 
         } catch (NoSuchAlgorithmException e) {
             System.err.println("No such algorithm as SHA-256 here");

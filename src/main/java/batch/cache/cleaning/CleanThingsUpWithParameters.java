@@ -50,7 +50,7 @@ public class CleanThingsUpWithParameters {
     }
 
     public void clean() {
-        if(ProjectValues.cleanCache) {
+        if(!ProjectValues.cleanCache) {
             return;
         }
 
@@ -62,7 +62,7 @@ public class CleanThingsUpWithParameters {
         }
 
         // truncate the table containing the tables with the data used for the caching, and reset autoincremental IDs
-        String sql = "TRUNCATE TABLE %s.triplestore; TRUNCATE TABLE %s.triples; TRUNCATE TABLE %s.triplestimeframes; TRUNCATE TABLE %s.lineage_cache";
+        String sql = "TRUNCATE TABLE %s.triples; TRUNCATE TABLE %s.triplestimeframes; TRUNCATE TABLE %s.lineage_cache";
         sql = String.format(sql, ProjectValues.schema, ProjectValues.schema, ProjectValues.schema, ProjectValues.schema);
         try {
             PostgreHandler.getConnection(ProjectValues.produceJdbcString(), "Oppenheimer").prepareStatement(sql).execute();
@@ -87,6 +87,11 @@ public class CleanThingsUpWithParameters {
         } catch (IllegalArgumentException e1) {
             // do nothing
         }
+
+        // delete the support file (could be left from a previous iteration and have useless queries inside of it)
+        (new File(ProjectPaths.supportTextFile)).delete();
+
+        System.out.println("Everything was correctly cleaned");
     }
 
 

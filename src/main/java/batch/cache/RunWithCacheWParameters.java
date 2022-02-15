@@ -25,7 +25,12 @@ import java.util.concurrent.*;
  * Built to work with inline parameters.
  * The required ones are:
  * <ul>
- *
+ * <li>-QN the query number</li>
+ * <li>-ET execution time, the number of times we have already executed this query </li>
+ * <li>-MD master directory, the directory where all the data about the current database is stored</li>
+ * <li>-VP values.properties path of the property file containing the parameters being used</li>
+ * <li>-QC query class, a string defining the query class being dealt with. Used to take the correct
+ * files from the master directory and print the correct files in the master directory</li>
  * </ul>*/
 public class RunWithCacheWParameters extends QueryingProcessParam {
 
@@ -60,6 +65,12 @@ public class RunWithCacheWParameters extends QueryingProcessParam {
 
         if(this.queryNumber % 10 == 0 && this.executionTime == 0)
             System.out.println("dealing with query " + this.queryNumber);
+
+        /** Set the schema of the database that we are using
+         * */
+        if(this.db_schema != null && !this.db_schema.equals("")) {
+            ProjectValues.schema = this.db_schema;
+        }
     }
 
     /** It closes connections when we are done */
@@ -186,6 +197,7 @@ public class RunWithCacheWParameters extends QueryingProcessParam {
     protected ReturnBox updateRDBAndCachePhase(List<List<String[]>> lineageBuffer) {
         // for each lineage (we have many lineages because we are dealing with all the queries of the epoch at one time)
         // update the RDB
+
         ReturnBox rb = new ReturnBox();
         long start = System.currentTimeMillis();
 
@@ -193,7 +205,7 @@ public class RunWithCacheWParameters extends QueryingProcessParam {
             rb = this.updateRDBPhaseWithOneLineage(lineage);
         }
         long elapsed = System.currentTimeMillis() - start;
-        System.out.println("[DEBUG] elapsed time to update the database: " + elapsed);
+//        System.out.println("[DEBUG] elapsed time to update the database: " + elapsed);
 
 
         // if required, count how big the cache is now

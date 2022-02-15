@@ -1,3 +1,5 @@
+#!/bin/bash
+
 for i in {0..199} # number of queries we perform
 do 
 	for j in {0..9} # each query is run 10 times

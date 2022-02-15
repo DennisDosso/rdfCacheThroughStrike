@@ -9,7 +9,7 @@ Here a list of operations frequently done to run the experiments, step by step.
 The very first step is to create a database. Here we used BSBM. If you have the jar, the command to generate the data 
 is the following (it creates a text file containing triples composing the database):
 <pre>
-java -cp bsbm.jar benchmark/generator/Generator -s ttl -fn dataset1m -pc 3000
+java -cp bsbm.jar benchmark/generator/Generator -s ttl -fn dataset25M -pc 70812
 </pre>
 (you need the BSBM jar for this)
 
@@ -29,7 +29,7 @@ pc is the number of products.
 This code in particular generates files that are made of around 250K lines.
 
 <pre>
-java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/SplitDatasetFile.java
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/SplitDatasetFile
 </pre>
 
 properties to set (paths.properties):
@@ -43,13 +43,41 @@ properties that are not present in other parts.
 ### Step 3: import the database into a triplestore on disk (using rdf4j)
 
 <pre>
-java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/ImportDatabase.java
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/ImportDatabase
 </pre>
 
 Properties to set:
 
 * ttlFilesDirectory: where to find the file (turtle) to import
 * databaseIndexDirectory: directory where to save the on-disk Database
+
+### Setp 4: create the values for the queries
+
+<pre>
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* query_generation/FindAndPrintQueryValues
+</pre>
+
+Facultative in-line parameters:
+* 
+* arg[0]: path of the property file containing the paths
+* arg[1]: path of the property file containing the parameters of the execution
+
+properties to set:
+* databaseIndexDirectory: where the database is stored
+* queryBuildingValuesFile: the path of the file where to write the values
+
+* whichQueryTypeToCreate: a string specifying the type of query we need to create
+
+### Step 5: use the query values to build the files containing the queries
+
+<code>
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* query_generation/GenerateQueries
+</code>
+
+Properties to set:
+
+
+
 
 ## MAIN PART
 
@@ -72,9 +100,13 @@ java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* query_generation/GenerateQueries
 </code>
 
 Properties to set:
-* queryBuildingValuesFile: file where to find the values that "create" the queries of one class
-* selectQueryFile: the path of the file where to print the queries (one per line)
-* databaseIndexDirectory: path of the directory containing the rdf4j database.
+* outputSelectQueryFile: where to save the SELECT queries
+* outputConstructQueryFile: where to save the CONSTRUCT queries
+* queriesToCreate: how many queries to create
+* databaseIndexDirectory: directory where the on-disk database is stored
+* buildingQueryValuesPath: file containing the query values to be used to generete the queries. NB: it is
+  neessary that this file contains the correct values for the class of query being considered at the time of
+  execution
 
 * whichQueryTypeToCreate: a string identifying the query type we want to create. This can have one of the following values
   (or no query will be built):
@@ -86,8 +118,6 @@ Properties to set:
   * EIGHT
   * TEN
 * alpha: parameter to decide the normal distribution that generates the queries. The bigger, the more concentrated around the mean (20) 
-
-
 
 
 ##Step2: run queries on the whole database (no optimization used)

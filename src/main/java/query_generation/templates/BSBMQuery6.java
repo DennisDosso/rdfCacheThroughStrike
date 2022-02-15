@@ -27,7 +27,10 @@ public class BSBMQuery6 {
             "}"
             + " LIMIT 100"; // decided to contain the output in case there are too many triples
 
-    public static final String building_values_query =
+    public static final String building_values_query = "PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+            "PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>\n" +
+            "PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>\n" +
+            "\n" +
             "SELECT distinct ?label\n" +
             "WHERE {\n" +
             "?product rdfs:label ?label .\n" +

@@ -46,11 +46,8 @@ public class UpdateRDBDatabaseWithTriplesFromLineageThread implements Callable<R
     public ReturnBox call()  {
         TripleStoreHandler.initModelBuilder();
         ReturnBox rb = new ReturnBox();
-        // statements to insert/update triples in the relational database
-
         // first, upload triples in the database
         try{
-
             String insert_q = String.format(SqlStrings.INSERT_TRIPLE, ProjectValues.schema);
             PreparedStatement insert_stmt = this.process.rdbConnection.prepareStatement(insert_q);
 

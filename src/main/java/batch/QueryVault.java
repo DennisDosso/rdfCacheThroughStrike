@@ -1,5 +1,6 @@
 package batch;
 
+import com.beust.jcommander.Parameter;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.GraphQuery;
 import org.eclipse.rdf4j.query.GraphQueryResult;
@@ -19,8 +20,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-/**A generic class containing values and methods useful for other sub-classes
- * that represent a generic querying process */
+/** This class represents a generic superclass that contains some values and methods
+ * that are useful for other classes. It represents a generic process of querying.
+ * It is subclassed by the QueryingProcess, a generic querying process without the use of inline parameters,
+ * and the QueryingProcessParam, that uses inline parameters.
+ * */
 public class QueryVault {
 
     /** The connection to the main RDF database*/
@@ -29,13 +33,27 @@ public class QueryVault {
     public Connection rdbConnection;
 
     /** The queries that we use. There is a select version and a construct version*/
-    public String selectQuery, constructQuery;
+    public String selectQuery;
+    public String constructQuery;
 
     /** number of the query in the list of queries in the file that we use that we want to execute*/
+    /** number of the query in the list of queries in the file that we use that we want to execute*/
+    @Parameter(
+            names = {"--query_number", "-QN"},
+            description = "The number of the query we are executing",
+            arity = 1,
+            required = true
+    )
     public int queryNumber;
 
 
     /** Number that represents the execution at which we are now.*/
+    @Parameter(
+            names = {"--execution_time", "-ET"},
+            description = "How many times have we already executed this query?",
+            arity = 1,
+            required = true
+    )
     public int executionTime;
 
     /** Each operation of insertion/update of a tuple will have this integer, representing

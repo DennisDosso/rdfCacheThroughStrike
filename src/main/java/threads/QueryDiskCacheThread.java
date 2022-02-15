@@ -1,6 +1,7 @@
 package threads;
 
 import batch.QueryVault;
+import batch.cache.RunWithCacheWParameters;
 import org.eclipse.rdf4j.query.TupleQuery;
 import org.eclipse.rdf4j.query.TupleQueryResult;
 import utils.ReturnBox;
@@ -19,6 +20,10 @@ public class QueryDiskCacheThread implements Callable<ReturnBox>  {
 
 
     public ReturnBox call() {
+//        if(this.process instanceof RunWithCacheWParameters) {
+//            return this.runRunWithCacheWParameters();
+//        }
+
         ReturnBox box = new ReturnBox();
         box.resultSetSize = 0; // if the query will return an empty set, we sign 0 so we will know
         // prepare to execute the query and take the time
@@ -26,6 +31,7 @@ public class QueryDiskCacheThread implements Callable<ReturnBox>  {
         int resultSetSize = 0;
         // use the cache, provided by the process that called this thread, to perform the query
         TupleQuery tupleQuery = this.process.cacheRepositoryConnection.prepareTupleQuery(this.process.selectQuery);
+
         // run the query
         try(TupleQueryResult result = tupleQuery.evaluate()) {
             // check if the result set is different from the emptyset

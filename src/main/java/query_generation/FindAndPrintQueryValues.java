@@ -7,6 +7,7 @@ import org.eclipse.rdf4j.repository.RepositoryConnection;
 import properties.ProjectPaths;
 import properties.ProjectValues;
 import query_generation.templates.*;
+import utils.SilenceLog4J;
 import utils.TripleStoreHandler;
 
 import java.io.FileWriter;
@@ -26,6 +27,8 @@ public class FindAndPrintQueryValues {
     FileWriter outputWriter;
 
     public FindAndPrintQueryValues(String[] args) {
+        // goddammit log4j
+        SilenceLog4J.silence();
         if(args.length >= 2) {
             ProjectPaths.init(args[0]);
             ProjectValues.init(args[1]);

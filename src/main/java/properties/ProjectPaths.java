@@ -60,6 +60,11 @@ public class ProjectPaths {
      * Used to build the paths of this class*/
     public static String currentQueryClass;
 
+    /** File containing the list of values of which we need to compute the average.
+     * Used when computing statistics
+     * */
+    public static String averageResultFile;
+
     public static void init() {
         Map<String, String> map = ReadPropertyFile.doIt(propertiesFilePath);
 
@@ -78,6 +83,7 @@ public class ProjectPaths {
         updateRDBTimesFile = map.get("updateRDBTimesFile");
         wholeDBresultFile = map.get("wholeDBresultFile");
         cacheResultFile = map.get("cacheResultFile");
+        averageResultFile = map.get("averageResultFile");
     }
 
     public static void init(String args) {

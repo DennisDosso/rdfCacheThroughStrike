@@ -12,7 +12,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
+/**
+ *
+ * Property to set: ProjectPaths.cacheResultFile
+ * */
 public class ComputeAvgQueryTimeCacheExecution {
 
     public static void main(String[] args) {

@@ -141,6 +141,7 @@ public class ProjectValues {
             existenceCheck = false;
             useSupportLineageCache = false;
             cleanCache = true;
+            e.printStackTrace();
         }
 
         namedGraphName = map.get("namedGraphName");
