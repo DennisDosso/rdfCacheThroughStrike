@@ -23,12 +23,16 @@ public class ComputeSimpleAverage {
 
     public void computeAverageAndZval() {
         List<Double> times = new ArrayList<>(); // times required on the system (total)
-
+        int limit = 1000;
         try(BufferedReader r = Files.newBufferedReader(Paths.get(ProjectPaths.averageResultFile))) {
             String line = "";
+            int counter = 0;
             while((line = r.readLine()) != null) {
                 double val = Double.parseDouble(line);
                 times.add(val);
+                counter++;
+                if(counter > limit)
+                    break;
             }
         } catch (IOException e) {
             e.printStackTrace();

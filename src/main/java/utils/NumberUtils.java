@@ -15,8 +15,13 @@ public class NumberUtils {
 
     public static double averageDouble(List<Double> l) {
         double sum = 0;
+
+//        int c = 0;
         for(double i : l) {
             sum += i;
+//            c++;
+//            if(c % 25 == 0) // DEBUG
+//                System.out.println("c: " + c + " total sum: " + sum + " avg: " + sum/c);
         }
         double avg =  sum / l.size();
         return avg;

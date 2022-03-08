@@ -1,5 +1,6 @@
 package statistics;
 
+import properties.ProjectValues;
 import utils.NumberUtils;
 
 import java.io.IOException;
@@ -9,6 +10,13 @@ import java.util.List;
 import java.util.Set;
 
 /** USed to compare the completeness of answers obtained from the cache
+ *
+ * Srt as properties:
+ * the result file from the whole DB (wholeDBresultFile)
+ * the result file from the cache execution (cacheResultFile)
+ * the file containing the select queries (selectQueryFile)
+ * the number of queries being considered
+ * the size of the epoch
  * */
 public class CompareCompleteness extends StatisticProcess {
 
@@ -37,8 +45,14 @@ public class CompareCompleteness extends StatisticProcess {
         List<Double> specialCompletenessRatios = new ArrayList<>();
 
         Set<String> alreadySeenQueries = new HashSet<>();
+        int counter = 0;
         // now we read the two lists together
         for(int i = 0; i < cacheList.size(); ++i) {
+            if(counter >= ProjectValues.queriesToCheck)
+            {
+                break;
+            } else counter++;
+
             StatisticsBox dbResult = dbList.get(i);
             StatisticsBox cacheResult = cacheList.get(i);
             if(cacheResult.hit) {
@@ -50,10 +64,13 @@ public class CompareCompleteness extends StatisticProcess {
                     // this query was found for the first time, it is a "special" hit
                     specialHits++;
                     double completenessRatio = (double) cacheResultSet / groundTruthResultSet;
+                    if(completenessRatio >1) // just in case. It should not be possible though -  the debugging confirmed
+                        completenessRatio = 1;
                     specialCompletenessRatios.add(completenessRatio);
                 } else {
                     // this is a query that we found previously
                     double completenessRatio = (double) cacheResultSet / groundTruthResultSet;
+                    if(completenessRatio >=1) completenessRatio = 1;
                     commonCompletenessRatios.add(completenessRatio);
                 }
             } else { // we had a miss
@@ -65,7 +82,7 @@ public class CompareCompleteness extends StatisticProcess {
         } // seen all queries
 
         // total number of hits / total number of queries
-        double overallHitRatio = (double) (commonHits) / cacheList.size();
+        double overallHitRatio = (double) (commonHits) / ProjectValues.queriesToCheck;
         System.out.println("total number of hits / total number of queries: " + overallHitRatio);
 
         // hits seen for the first time / total number of hits

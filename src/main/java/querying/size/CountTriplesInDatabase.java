@@ -20,7 +20,7 @@ public class CountTriplesInDatabase {
 
         // open the database
         File dataDir = new File(databaseDirectory);
-        Repository db = new SailRepository(new NativeStore(dataDir, ""));
+        Repository db = new SailRepository(new NativeStore(dataDir, "spoc"));
         db.init();
         RepositoryConnection conn = db.getConnection();
 

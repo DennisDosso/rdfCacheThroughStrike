@@ -45,8 +45,8 @@ public class ComputeAverageQueryTimeWholeDB {
                     if(line.startsWith("#")) { // we need to close the current query
                         long max = Collections.max(times);
                         long min = Collections.min(times);
-                        times.remove(Long.valueOf(min));
-                        times.remove(Long.valueOf(max));
+//                        times.remove(Long.valueOf(min));
+//                        times.remove(Long.valueOf(max));
 
                         double avg = NumberUtils.averageLong(times);
                         averages.add(avg);
@@ -63,8 +63,8 @@ public class ComputeAverageQueryTimeWholeDB {
             times.add(time);
             long max = Collections.max(times);
             long min = Collections.min(times);
-            times.remove(Long.valueOf(min));
-            times.remove(Long.valueOf(max));
+//            times.remove(Long.valueOf(min));
+//            times.remove(Long.valueOf(max));
             double avg = NumberUtils.averageLong(times);
             averages.add(avg);
 

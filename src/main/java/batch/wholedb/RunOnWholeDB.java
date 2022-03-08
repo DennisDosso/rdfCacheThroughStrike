@@ -103,6 +103,7 @@ public class RunOnWholeDB extends QueryingProcess {
         if(execution.executionTime == 0) { // first time we run this query
             execution.wholeDbFw.write("# QUERYNO " + execution.queryNumber + ", " + res.resultSetSize + "\n");
         }
+
         execution.wholeDbFw.write(res.queryTime + "\n");
 
         execution.close();

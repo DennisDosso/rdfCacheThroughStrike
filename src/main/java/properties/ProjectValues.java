@@ -120,6 +120,9 @@ public class ProjectValues {
             useSupportLineageCache = Boolean.parseBoolean(map.get("useSupportLineageCache"));
             cleanCache = Boolean.parseBoolean(map.get("cleanCache"));
             queriesToCheck = Integer.parseInt(map.get("queriesToCheck"));
+
+            if(!timeframesRequired)
+                timeframes = 1;
         } catch (Exception e) {
             System.err.println("[ERROR] check the values.properties file. Something is probably missing or wrong");
             queriesToCreate = 10;

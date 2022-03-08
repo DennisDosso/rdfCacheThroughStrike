@@ -56,6 +56,9 @@ public class SqlStrings {
     public static final String CHECK_HOW_MANY_TRIPLES =
             "SELECT COUNT(*) FROM %s.triplestimeframes where timeframe = ?";
 
+    public static final String CHECK_HOW_MANY_TRIPLES_ABOVE_THRESHOLD =
+            "SELECT COUNT(*) FROM %s.triplestimeframes where timeframe = ? and strikes > ?";
+
     public static final String FIND_OLDEST_TRIPLES_IN_TIMEFRAME =
             "SELECT min(t.insertiontime) FROM %s.triples as t JOIN %s.triplestimeframes AS tf on t.tripleid = tf.tripleid" +
                     " WHERE tf.timeframe = ?";
@@ -94,5 +97,26 @@ public class SqlStrings {
     /** Used to insert a triple of a lineage into the support relational table*/
     public static final String INSERT_CACHED_LINEAGE =
             "INSERT INTO %s.lineage_cache (query, subject, predicate, object) VALUES (?, ?, ?, ?)";
+
+    public static final String GET_BASELINE_ANSWER =
+            "SELECT value from %s.baselinecache WHERE query_hash = ?;";
+
+    public static final String ADD_TUPLE_TO_RDB_CACHE =
+            "INSERT INTO %s.baselinecache(\n" +
+                    "\tquery_number, query_hash, value)\n" +
+                    "\tVALUES (?, ?, ?);";
+
+    public static final String CHECK_HOW_MANY_TRIPLES_IN_RDB_CACHE =
+            "SELECT COUNT(*) FROM %s.baselinecache";
+
+    /** Used to find the query number of the query that was last used in the rdb cache*/
+    public static final String FIND_OLDEST_QUERY_NUMBER_IN_BASELINECACHE =
+            "SELECT min(query_number) FROM %s.baselinecache";
+
+    public static final String DELETE_LEAST_RECENTLY_USED_QUERY_IN_BASELINECACHE =
+            "DELETE FROM %s.baselinecache where query_number = ?";
+
+    public static final String UPDATE_RECENTLY_USED_QUERY_NUMBER =
+            "UPDATE %s.baselinecache set query_number = ? where query_hash = ?";
 
 }

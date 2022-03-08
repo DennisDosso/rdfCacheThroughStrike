@@ -95,9 +95,12 @@ public class RunOnWholeDBwParam extends QueryingProcessParam {
 
         // now print the results
         if(execution.executionTime == 0) { // first time we run this query
-            execution.wholeDbFw.write("# QUERYNO " + execution.queryNumber + ", " + res.resultSetSize + "\n");
+            execution.wholeDbFw.write("# QUERYNO " + execution.queryNumber + ", " + res.resultSetSize + "," + res.foundSomething +"\n");
         }
-        execution.wholeDbFw.write(res.queryTime + "\n");
+        if(res.inTime)
+            execution.wholeDbFw.write(res.queryTime + "\n");
+        else
+            execution.wholeDbFw.write("timeout\n");
 
         execution.close();
 

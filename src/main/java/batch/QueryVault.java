@@ -2,9 +2,7 @@ package batch;
 
 import com.beust.jcommander.Parameter;
 import org.eclipse.rdf4j.model.Statement;
-import org.eclipse.rdf4j.query.GraphQuery;
-import org.eclipse.rdf4j.query.GraphQueryResult;
-import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
 import properties.ProjectValues;
 import utils.ReturnBox;
@@ -19,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /** This class represents a generic superclass that contains some values and methods
  * that are useful for other classes. It represents a generic process of querying.
@@ -269,12 +268,16 @@ public class QueryVault {
             int lowest_insertiontime =  this.getLowestInsertiontime();
             int deletedRows = this.removeTriplesFromThisInsertiontime(lowest_insertiontime);
             currentSize -= deletedRows;
+//            System.out.println("[DEBUG] deleted rows were " + deletedRows + "\ncurrentSize now is " + currentSize);
         } while (currentSize > timeframeCap);
+//        System.out.println("[DEBUG] we exited with currentSize " + currentSize + " and timeframecap of " + timeframeCap);
     }
 
     /** Gets  the oldest triples (the oldest lineage block) in the current timeframe */
     private int getLowestInsertiontime() throws SQLException {
+//        System.out.println("doing this query");
         String sq = String.format(SqlStrings.FIND_OLDEST_TRIPLES_IN_TIMEFRAME, ProjectValues.schema, ProjectValues.schema);
+//        System.out.println(sq + " where the timeframe is " + this.timeframe);
         PreparedStatement min = this.rdbConnection.prepareStatement(sq);
         min.setInt(1, this.timeframe);
         ResultSet rs = min.executeQuery();
@@ -292,10 +295,12 @@ public class QueryVault {
         // first, find triples with the id corresponding to this insertion time
         List<Integer> triplesIDs = this.findTriplesWithThisInsertionTime(insertion_time);
 
-        // remove them from the current timeframe
+        // remove them from the current timeframe both in the RDB and the cache
         return this.removeTheseTriplesFromCurrentTimeframe(triplesIDs);
     }
 
+    /** Returns a list of triples is from the RDB belonging to a specific insertion time
+     * */
     private List<Integer> findTriplesWithThisInsertionTime(int insertion_time) throws SQLException {
         // first, get all the triples from the RDB with this insertion time, and remove them from the cache
         String q = String.format(SqlStrings.GET_TRIPLES_WITH_THIS_INSERTIONTIME, ProjectValues.schema);
@@ -303,7 +308,7 @@ public class QueryVault {
         ps.setInt(1, insertion_time);
         List<Integer> tripleIDs = new ArrayList<>();
 
-        // go through the triples and remove them from the cache too
+        // go through the triples
         ResultSet rs = ps.executeQuery();
         while(rs.next()) {
             tripleIDs.add(rs.getInt(4));
@@ -341,7 +346,7 @@ public class QueryVault {
      * in the main table triples.
      *
      * */
-    private void reduceStrikesCountForThisTripleId(int tripleID, int strikes) throws SQLException {
+    protected void reduceStrikesCountForThisTripleId(int tripleID, int strikes) throws SQLException {
         String sql = String.format(SqlStrings.REDUCE_STRIKE_COUNT, ProjectValues.schema);
         PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
         ps.setInt(1, strikes);
@@ -356,7 +361,6 @@ public class QueryVault {
         ps.setInt(1, tripleID);
         ps.setInt(2, timeframe);
         int deleted = ps.executeUpdate();
-
         return deleted;
     }
 
@@ -365,7 +369,7 @@ public class QueryVault {
      * We use the method {@link TripleStoreHandler addTripleToDeletion} as support.
      * We add the triples to a in-RAM database. When you are done using this method, call
      * TripleStoreHandler.removeTriplesFromCacheUsingDeletionBuilder*/
-    private void checkIfThisTripleIdNeedsToBeDeletedFromCache(int tripleID) throws SQLException {
+    protected void checkIfThisTripleIdNeedsToBeDeletedFromCache(int tripleID) throws SQLException {
         // first, check the strike count of the triple
         String q = String.format(SqlStrings.GET_TRIPLE_STRIKES, ProjectValues.schema);
         PreparedStatement ps = this.rdbConnection.prepareStatement(q);
@@ -402,6 +406,8 @@ public class QueryVault {
                 return;
             }
 
+            System.out.println("[DEBUG] dealing with timeframes at query " + this.queryNumber);
+
             // here we only implemented the time-based cooldown strategy
             long time =  this.timeBasedCoolDownStrategy();
             // write down the result
@@ -414,7 +420,7 @@ public class QueryVault {
     }
 
     private long timeBasedCoolDownStrategy() {
-        long start = System.nanoTime();
+        long start = System.currentTimeMillis();
         // get the number of the oldest timeframe in the RDB and delete it
         try {
             int oldestTimeframe = (this.timeframe - ProjectValues.timeframes) + 1;
@@ -422,7 +428,7 @@ public class QueryVault {
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
-        long elapsed = System.nanoTime() - start;
+        long elapsed = System.currentTimeMillis() - start;
         return elapsed;
     }
 
@@ -473,5 +479,15 @@ public class QueryVault {
         }
 
         return cacheSize;
+    }
+
+    public String getValuesFromResult(BindingSet result) {
+        Set<String> bindigNames = result.getBindingNames();
+        String res = "";
+        for(String bN : bindigNames) {
+            String value = result.getValue(bN).toString();
+            res += value + ",";
+        }
+        return res;
     }
 }

@@ -2,14 +2,14 @@
 
 Here a list of operations frequently done to run the experiments, step by step.
 
-## PREPRECOESSING
+## PREPROCESSING
 
 ### Step 1: create the database BSBM
 
 The very first step is to create a database. Here we used BSBM. If you have the jar, the command to generate the data
 is the following (it creates a text file containing triples composing the database):
 <pre>
-java -cp bsbm.jar benchmark/generator/Generator -s ttl -fn dataset1m -pc 3000
+java -cp bsbm.jar benchmark/generator/Generator -s ttl -fn dataset100M -pc 284826
 </pre>
 (you need the BSBM jar for this)
 
@@ -29,7 +29,7 @@ pc is the number of products.
 This code in particular generates files that are made of around 250K lines.
 
 <pre>
-java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/SplitDatasetFile.java
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/SplitDatasetFile
 </pre>
 
 properties to set (paths.properties):
@@ -43,7 +43,7 @@ properties that are not present in other parts.
 ### Step 3: import the database into a triplestore on disk (using rdf4j)
 
 <pre>
-java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/ImportDatabase.java
+java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* setup/ImportDatabase
 </pre>
 
 Properties to set:

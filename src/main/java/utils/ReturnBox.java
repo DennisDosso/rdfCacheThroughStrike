@@ -1,5 +1,6 @@
 package utils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /** Class that contains data that we may return from methods
@@ -24,13 +25,26 @@ public class ReturnBox {
 	public boolean foundSomething = false;
 
 	public List<String[]> lineage;
+	public List<String> results;
 
 	public int strikes;
 
 	public boolean present;
 
+	public boolean malformed;
+
 	public ReturnBox() {
 		this.resultSetSize = 0;
 		this.inTime = true;
+		malformed = false;
+		results = new ArrayList<>();
+	}
+
+	public String resultsToString() {
+		String s = "";
+		for(int i = 0; i < results.size() - 1; ++i)
+			s = s + results.get(i) + ",";
+		s = s + results.get(results.size() - 1);
+		return s;
 	}
 }

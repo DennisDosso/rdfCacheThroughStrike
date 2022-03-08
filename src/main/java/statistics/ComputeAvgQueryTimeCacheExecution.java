@@ -28,6 +28,7 @@ public class ComputeAvgQueryTimeCacheExecution {
         List<Double> averages = new ArrayList<>();
 
         int misses = 0, hits = 0, timeouts = 0;
+        int counter = 0;
 
         // open the file with the results
         try(BufferedReader r = Files.newBufferedReader(Paths.get(ProjectPaths.cacheResultFile))) {
@@ -35,8 +36,13 @@ public class ComputeAvgQueryTimeCacheExecution {
             String line = "";
 
             while((line = r.readLine()) != null) {
+                if(counter >= ProjectValues.queriesToCheck) {
+                    break;
+                }
+
                 if(oldLine.startsWith("#")) { // beginning of a new query
                     times.clear(); cacheMissTimes.clear(); dbMissTimes.clear();
+                    counter++;
 
                     // read the data
                     String[] parts = line.split(",");

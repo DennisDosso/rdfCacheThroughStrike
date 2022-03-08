@@ -1,0 +1,6 @@
+We downloaded the query logs from https://iccl.inf.tu-dresden.de/web/Wikidata_SPARQL_Logs/en
+In particular, we downloaded the queries of Interval 1 (All) at https://analytics.wikimedia.org/datasets/one-off/wikidata/sparql_query_logs/2017-07-10_2017-08-06/2017-07-10_2017-08-06_all.tsv.gz
+
+From these, I took the first 1M of queries.
+Of these, I removed many queries that were not BGP and "strange"
+I remained with 315045 queries.

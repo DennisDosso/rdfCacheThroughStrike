@@ -23,8 +23,9 @@ public class DealWithCapOnTheCacheBashThread implements Callable<ReturnBox>  {
     @Override
     public ReturnBox call()  {
         ReturnBox rb = new ReturnBox();
+        long start = System.currentTimeMillis();
         // I decided that each timeframe has an equal quantity of available memory
-        int timeframeCap = (int) ProjectValues.cap / ProjectValues.timeframes;
+        int timeframeCap = ProjectValues.cap / ProjectValues.timeframes;
 
         // first, ask if the cache has more triples than necessary
         String q = String.format(SqlStrings.CHECK_HOW_MANY_TRIPLES, ProjectValues.schema);
@@ -42,14 +43,24 @@ public class DealWithCapOnTheCacheBashThread implements Callable<ReturnBox>  {
                 this.process.reduceTimeFrameSize(timeFrameSize, timeframeCap);
             }
 
+            // re-run the query
+            r = count_stmt.executeQuery();
+            if(!r.next())
+                return null;
+            timeFrameSize = r.getInt(1);
+            System.out.println("[DEBUG] now the database says that the timeframesize is " + timeFrameSize);
+
             r.close();
+            count_stmt.close();
         } catch (SQLException e) {
             e.printStackTrace();
         } catch(Exception e2) {
             e2.printStackTrace();
         }
 
+        long elapsed = System.currentTimeMillis() - start;
         rb.foundSomething = true;
+        rb.queryTime = elapsed;
         return rb;
     }
 }

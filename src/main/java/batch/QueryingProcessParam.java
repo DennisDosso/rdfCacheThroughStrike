@@ -58,22 +58,13 @@ public class QueryingProcessParam extends QueryVault {
      * -- NB this field is NOT initialized in the constructor of this class */
     protected FileWriter updateRDBFw;
 
-    /** File writer used to write down the time required to
-     * compute the cooldown strategy */
-    protected FileWriter coolDownWriter;
+//    /** File writer used to write down the time required to
+//     * compute the cooldown strategy */
+//    protected FileWriter coolDownWriter;
 
     /** The current epoch where the process is finding itself
      * */
     public int epoch;
-
-    /** Each operation of insertion/update of a tuple will have this integer, representing
-     * the "moment" when we did the operation. This helps in some operations on the RDB
-     * */
-    public int insertionToken;
-
-    /** The timeframe where the operation is currently located
-     * */
-    public int timeframe;
 
     /** path of the file containing the values property file */
     @Parameter(
@@ -283,8 +274,6 @@ public class QueryingProcessParam extends QueryVault {
                 this.cacheFw.write( "hit," + result.queryTime + ",-,-," + result.resultSetSize + "\n");
             else
                 this.cacheFw.write( "hit," + result.queryTime + ",-,-,-\n");
-
-
         } else {
             // we did not have a hit on the cache. It is therefore necessary to ask to the whole DB
             ReturnBox wholeDbBox = this.runQueryOnWholeDB();
@@ -573,22 +562,22 @@ public class QueryingProcessParam extends QueryVault {
 
     /** Updates the cache by enforcing the size specified by the cap.
      * */
-    protected boolean dealWithTheCap() {
+    protected void dealWithTheCap(ReturnBox rb) {
         ReturnBox rb2 = new ReturnBox();
         if(ProjectValues.capRequired ) {
             // code with timeout
             rb2 = this.dealWithTheCapOnTheCacheWithThread();
         } else { // let's just pretend we completed this task in time, since it is not required
             rb2.foundSomething = true;
+            rb2.queryTime = 0;
         }
-
-        // return a boolean that tells us if we did it or not
-        return rb2.foundSomething;
+        // update the time required to apply the cap
+        rb.queryTime += rb2.queryTime;
     }
 
     private ReturnBox dealWithTheCapOnTheCacheWithThread() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<ReturnBox> future = null;
+        Future<ReturnBox> future;
         ReturnBox rb = new ReturnBox();
 
         future = executor.submit(new DealWithCapOnTheCacheBashThread(this));
@@ -606,174 +595,5 @@ public class QueryingProcessParam extends QueryVault {
         return rb;
     }
 
-    /** Reduces the size of the current timeframe removing the oldest triples in that timeframe
-     *
-     * @param timeFrameSize the dimension of the current timeframe
-     * @param timeframeCap the maximum size allowed for one timeframe
-     * */
-    public void reduceTimeFrameSize(int timeFrameSize, int timeframeCap) throws SQLException {
-        int currentSize = timeFrameSize;
 
-        // remove triples from the timeframe in bunch as long as we need
-        do {
-            int lowest_insertiontime =  this.getLowestInsertiontime();
-            int deletedRows = this.removeTriplesFromThisInsertiontime(lowest_insertiontime);
-            currentSize -= deletedRows;
-        } while (currentSize > timeframeCap);
-    }
-
-    /** Gets  the oldest triples (the oldest lineage block) in the current timeframe */
-    private int getLowestInsertiontime() throws SQLException {
-        String sq = String.format(SqlStrings.FIND_OLDEST_TRIPLES_IN_TIMEFRAME, ProjectValues.schema, ProjectValues.schema);
-        PreparedStatement min = this.rdbConnection.prepareStatement(sq);
-        min.setInt(1, this.timeframe);
-        ResultSet rs = min.executeQuery();
-        if(rs.next()) {
-            int res = rs.getInt(1); rs.close(); min.close();
-            return  res;
-        }
-        rs.close(); min.close();
-        return -1;
-    }
-
-    /** Removes from the current timeframe the triples corresponding to the indicated insertion time*/
-    private int removeTriplesFromThisInsertiontime(int insertion_time) throws SQLException {
-
-        // first, find triples with the id corresponding to this insertion time
-        List<Integer> triplesIDs = this.findTriplesWithThisInsertionTime(insertion_time);
-
-        // remove them from the current timeframe
-        return this.removeTheseTriplesFromCurrentTimeframe(triplesIDs);
-    }
-
-    private List<Integer> findTriplesWithThisInsertionTime(int insertion_time) throws SQLException {
-        // first, get all the triples from the RDB with this insertion time, and remove them from the cache
-        String q = String.format(SqlStrings.GET_TRIPLES_WITH_THIS_INSERTIONTIME, ProjectValues.schema);
-        PreparedStatement ps = this.rdbConnection.prepareStatement(q);
-        ps.setInt(1, insertion_time);
-        List<Integer> tripleIDs = new ArrayList<>();
-
-        // go through the triples and remove them from the cache too
-        ResultSet rs = ps.executeQuery();
-        while(rs.next()) {
-            tripleIDs.add(rs.getInt(4));
-        }
-        rs.close(); ps.close();
-        return tripleIDs;
-    }
-
-    private int removeTheseTriplesFromCurrentTimeframe(List<Integer> triplesIDs) throws SQLException {
-        TripleStoreHandler.initDeletion();
-        // first, get the number of strikes on the triple in question
-        String sql = String.format(SqlStrings.GET_TIMEFRAME_TRIPLE_STRIKES, ProjectValues.schema);
-        PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
-        int deletedTriples = 0;
-        ResultSet rs = null;
-        for(int tripleID : triplesIDs) {
-            ps.setInt(1, tripleID);
-            ps.setInt(2, this.timeframe);
-            rs = ps.executeQuery();
-            if(rs.next()) {
-                int strikes = rs.getInt(1);
-                // now update the main table with this reduction of strikes and check if needs to be deleted from the cache
-                this.reduceStrikesCountForThisTripleId(tripleID, strikes);
-                this.checkIfThisTripleIdNeedsToBeDeletedFromCache(tripleID);
-                // finally, delete the triple from the timeframe in the RDB
-                deletedTriples += this.removeTripleFromThisTimeframe(tripleID, this.timeframe);
-            }
-        }
-        ps.close(); rs.close();
-        TripleStoreHandler.removeTriplesFromCacheUsingDeletionBuilder();
-        return deletedTriples;
-    }
-
-    /** Given a triple ID and a certain quantity of strikes, reduces the number of strikes from that triple
-     * in the main table triples.
-     *
-     * */
-    private void reduceStrikesCountForThisTripleId(int tripleID, int strikes) throws SQLException {
-        String sql = String.format(SqlStrings.REDUCE_STRIKE_COUNT, ProjectValues.schema);
-        PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
-        ps.setInt(1, strikes);
-        ps.setInt(2, tripleID);
-        ps.executeUpdate();
-        ps.close();
-    }
-
-    private int removeTripleFromThisTimeframe(int tripleID, int timeframe) throws SQLException {
-        String sql = String.format(SqlStrings.DELETE_TRIPLE_FROM_TIMEFRAME, ProjectValues.schema);
-        PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
-        ps.setInt(1, tripleID);
-        ps.setInt(2, timeframe);
-        int deleted = ps.executeUpdate();
-
-        return deleted;
-    }
-
-    /** Controls if a given triple identified by its id needs to be deleted from the cache
-     * (its strike count value went below the threshold).
-     * We use the method {@link TripleStoreHandler addTripleToDeletion} as support.
-     * We add the triples to a in-RAM database. When you are done using this method, call
-     * TripleStoreHandler.removeTriplesFromCacheUsingDeletionBuilder*/
-    private void checkIfThisTripleIdNeedsToBeDeletedFromCache(int tripleID) throws SQLException {
-        // first, check the strike count of the triple
-        String q = String.format(SqlStrings.GET_TRIPLE_STRIKES, ProjectValues.schema);
-        PreparedStatement ps = this.rdbConnection.prepareStatement(q);
-        ps.setInt(1, tripleID);
-        ResultSet rs = ps.executeQuery();
-        if(rs.next()) {
-            String sub = rs.getString(1);
-            String pred = rs.getString(2);
-            String obj = rs.getString(3);
-            int strikes = rs.getInt(4);
-            if(Math.log(strikes + 1) <= ProjectValues.creditThreshold) {
-                // it needs to be deleted from cache -- add it to the RAM cache that we will use later
-                TripleStoreHandler.addTripleToDeletion(sub, pred, obj);
-            }
-        }
-    }
-
-
-    private long timeBasedCoolDownStrategy() {
-        long start = System.nanoTime();
-        // get the number of the oldest timeframe in the RDB and delete it
-        try {
-            int oldestTimeframe = (this.timeframe - ProjectValues.timeframes) + 1;
-            this.removeOldestTimeframe(oldestTimeframe);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-        long elapsed = System.nanoTime() - start;
-        return elapsed;
-    }
-
-    /** The method deletes from the timeframe table all the tuples belonging to that timeframe.
-     * As a consequence, their strike count is updated in the supporting RDB
-     *
-     * @param oldestTimeframe the number identiying the latest timeframe, which is the one to be deleted*/
-    private void removeOldestTimeframe(int oldestTimeframe) throws SQLException {
-        // prepare the TripleStoreHandler to held in RAM the triples to be later deleted from the cache
-        TripleStoreHandler.initDeletion();
-
-        // first, get triple ID and strike count of the triples that need to be deleted
-        String sql = String.format(SqlStrings.GET_DELENDUM_TIMEFRAME_TRIPLES, ProjectValues.schema);
-        PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
-        ps.setInt(1, oldestTimeframe);
-        ResultSet rs = ps.executeQuery();
-
-        while(rs.next()) { // for each triple to be deleted
-            int tripleID = rs.getInt(1); // get its ID
-            int strikes = rs.getInt(2); // get its strikes number
-
-            // reduce these strikes from the main table
-            this.reduceStrikesCountForThisTripleId(tripleID, strikes);
-            // check if now this triple needs to be deleted from the cache (went below threshold)
-            this.checkIfThisTripleIdNeedsToBeDeletedFromCache(tripleID);
-            // finally remove it from the oldest timeframe
-            this.removeTripleFromThisTimeframe(tripleID, oldestTimeframe);
-        }
-
-        // commit the deletion from the cache
-        TripleStoreHandler.removeTriplesFromCacheUsingDeletionBuilder();
-    }
 }

@@ -134,7 +134,7 @@ OPTIONAL { ?review bsbm:rating1 ?rating1 . }
 OPTIONAL { ?review bsbm:rating2 ?rating2 . }
 }
 }
-LIMIT 100
+LIMIT 1000
 
 # query 8
 PREFIX bsbm: <http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/>

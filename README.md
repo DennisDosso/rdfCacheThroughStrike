@@ -58,7 +58,7 @@ java -cp rdfCreditRe-1.0-SNAPSHOT.jar:./lib/* query_generation/FindAndPrintQuery
 </pre>
 
 Facultative in-line parameters:
-* 
+
 * arg[0]: path of the property file containing the paths
 * arg[1]: path of the property file containing the parameters of the execution
 
@@ -67,6 +67,7 @@ properties to set:
 * queryBuildingValuesFile: the path of the file where to write the values
 
 * whichQueryTypeToCreate: a string specifying the type of query we need to create
+* *
 
 ### Step 5: use the query values to build the files containing the queries
 

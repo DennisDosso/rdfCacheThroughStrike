@@ -7,15 +7,21 @@ import query_generation.templates.*;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 /** Use this class to generate queries for the mixed scenario.
- * It uses the queries from the uniform scenario, so you need to have at least all of those before
+ * It uses the queries from the uniform scenario, so you need to have at least all of those before.
  *
+ *param: buildingQueryValues, the directory where the query values are stored, in the main method
+ * param: queriesToCreate: how many queries to create
+ * selectQueryFile
+ * constructQueryFile
  * */
 public class GenerateMixedCaseScenarioQueries extends GenerateQueries {
 
@@ -52,8 +58,15 @@ public class GenerateMixedCaseScenarioQueries extends GenerateQueries {
         this.readAllCsvValues(path10, list10);
 
         List<List<String>> listOfLists = new ArrayList<>();
-        listOfLists.add(list1); listOfLists.add(list2); listOfLists.add(list3); listOfLists.add(list5);
-        listOfLists.add(list6); listOfLists.add(list7); listOfLists.add(list8); listOfLists.add(list10);
+        listOfLists.add(list1);
+        listOfLists.add(list2);
+        listOfLists.add(list3);
+        listOfLists.add(list5);
+        listOfLists.add(list6);
+        listOfLists.add(list7);
+        listOfLists.add(list8);
+        listOfLists.add(list10);
+
 
         List<QueryHolder> queriesToPrint = new ArrayList<>();
 
@@ -61,15 +74,20 @@ public class GenerateMixedCaseScenarioQueries extends GenerateQueries {
         Set<String> csvValuesSet = new HashSet<>();
         for(int i = 0; i < ProjectValues.queriesToCreate; ++i) {
             // choose randomly what type of query to create
-            int queryClass = ThreadLocalRandom.current().nextInt(0, 8);
+            int queryClass = ThreadLocalRandom.current().nextInt(0, listOfLists.size());
             List<String> csvList = listOfLists.get(queryClass);
+            if(csvList.size() == 0)
+                continue; // case in which we avoid one class by not including its values file (in case the class is
+            // too hard
 
             // now choose randomly one set of csv values for this query
             String csvValues;
+            int count = 0;
             do{
                 int randomNum = ThreadLocalRandom.current().nextInt(0, csvList.size());
                 csvValues = csvList.get(randomNum);
-            } while (csvValuesSet.contains(csvValues));
+                count++;
+            } while (csvValuesSet.contains(csvValues) && count < 10);
             csvValuesSet.add(csvValues);
             // now build the query
             QueryHolder qH = this.buildThisQueryClassWithTheseCsvValues(queryClass, csvValues);
@@ -270,7 +288,12 @@ public class GenerateMixedCaseScenarioQueries extends GenerateQueries {
             while((line = reader1.readLine()) != null) {
                 list1.add(line);
             }
-        } catch (IOException e) {
+        } catch(FileNotFoundException fnfe) {
+            System.out.println("The file " + path1 + " was not found");
+        } catch(NoSuchFileException noSuchFileException) {
+            System.out.println("The file " + path1 + " was not found");
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -279,7 +302,7 @@ public class GenerateMixedCaseScenarioQueries extends GenerateQueries {
     public static void main(String[] args) {
         GenerateMixedCaseScenarioQueries execution = new GenerateMixedCaseScenarioQueries();
 
-        String queryValuesDirectoryPath = "/Users/dennisdosso/Documents/databases/BSBM/revival/1M/building_query_values";
+        String queryValuesDirectoryPath = "/Users/dennisdosso/Documents/databases/BSBM/revival/250K/new_query_values";
         execution.printMixedScenariosQueries(queryValuesDirectoryPath);
         System.out.println("done");
     }

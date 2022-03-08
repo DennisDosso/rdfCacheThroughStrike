@@ -65,6 +65,13 @@ public class ProjectPaths {
      * */
     public static String averageResultFile;
 
+    /** Path of the file containing the query log from wikidata*/
+    public static String wikidataLogFilePath;
+
+    /** where we write the log file with the nice queries from wikidata*/
+    public static String wikidataAmendedLogFilePath;
+
+
     public static void init() {
         Map<String, String> map = ReadPropertyFile.doIt(propertiesFilePath);
 
@@ -84,6 +91,8 @@ public class ProjectPaths {
         wholeDBresultFile = map.get("wholeDBresultFile");
         cacheResultFile = map.get("cacheResultFile");
         averageResultFile = map.get("averageResultFile");
+        wikidataLogFilePath = map.get("wikidataLogFilePath");
+        wikidataAmendedLogFilePath = map.get("wikidataAmendedLogFilePath");
     }
 
     public static void init(String args) {

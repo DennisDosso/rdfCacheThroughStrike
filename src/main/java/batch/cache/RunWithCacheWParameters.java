@@ -60,8 +60,17 @@ public class RunWithCacheWParameters extends QueryingProcessParam {
             return;
         }
 
-        this.timeframe = (int) Math.ceil((float) this.queryNumber / ProjectValues.timeframeLenght );
-        this.epoch = (int) Math.ceil((float) this.queryNumber / ProjectValues.epochLength) ;
+        if(ProjectValues.timeframesRequired)
+            this.timeframe = (int) Math.ceil((float) this.queryNumber / ProjectValues.timeframeLenght );
+        else
+            this.timeframe = 1; // we always stay on the same timeframe
+
+        this.epoch = (int) Math.ceil((float) this.queryNumber / ProjectValues.epochLength);
+        // the insertion token represents the "moment" in which we are inserting some triples in the RDB
+        // it is associated to the query ID of each query
+        // since we are doing this via bash, we need to do some simple calculations to know,
+        // at each new execution, what is exactly the id of the query that we are dealing with
+        this.insertionToken = this.queryNumber - ProjectValues.epochLength;
 
         if(this.queryNumber % 10 == 0 && this.executionTime == 0)
             System.out.println("dealing with query " + this.queryNumber);
@@ -197,7 +206,6 @@ public class RunWithCacheWParameters extends QueryingProcessParam {
     protected ReturnBox updateRDBAndCachePhase(List<List<String[]>> lineageBuffer) {
         // for each lineage (we have many lineages because we are dealing with all the queries of the epoch at one time)
         // update the RDB
-
         ReturnBox rb = new ReturnBox();
         long start = System.currentTimeMillis();
 
@@ -205,23 +213,8 @@ public class RunWithCacheWParameters extends QueryingProcessParam {
             rb = this.updateRDBPhaseWithOneLineage(lineage);
         }
         long elapsed = System.currentTimeMillis() - start;
+        rb.queryTime = elapsed;
 //        System.out.println("[DEBUG] elapsed time to update the database: " + elapsed);
-
-
-        // if required, count how big the cache is now
-        int cacheSize = 0;
-        if(ProjectValues.printCacheSize) {
-            cacheSize = this.checkCacheSize();
-        }
-
-        // print the time required to update the RDB and its dimension
-        try {
-            updateRDBFw.write(this.epoch + "," + elapsed + "," + cacheSize + "\n");
-            updateRDBFw.flush();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
 
         return rb;
     }
@@ -237,15 +230,31 @@ public class RunWithCacheWParameters extends QueryingProcessParam {
         this.computeLineages(lineageBuffer);
 
         // UPDATE THE RDB
-        this.updateRDBAndCachePhase(lineageBuffer);
-
+        ReturnBox rb = this.updateRDBAndCachePhase(lineageBuffer);
         // DEAL WITH THE CAP
-        this.dealWithTheCap();
+        this.dealWithTheCap(rb);
+
+        this.printUpdateAboutTheCache(rb);
 
         // deal with the timeframe update
         this.dealWithTimeframes();
     }
 
+    private void printUpdateAboutTheCache(ReturnBox rb) {
+        // if required, count how big the cache is now
+        int cacheSize = 0;
+        if(ProjectValues.printCacheSize) {
+            cacheSize = this.checkCacheSize();
+        }
+
+        // print the time required to update the RDB and its dimension
+        try {
+            updateRDBFw.write(this.epoch + "," + rb.queryTime + "," + cacheSize + "\n");
+            updateRDBFw.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
 
     /** Starting method where we begin our journey to execute one query.
