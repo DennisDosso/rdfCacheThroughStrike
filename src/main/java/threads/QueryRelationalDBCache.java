@@ -23,7 +23,6 @@ public class QueryRelationalDBCache implements Callable<ReturnBox>  {
         ReturnBox box = new ReturnBox();
         box.resultSetSize = 0;
         long start = System.currentTimeMillis();
-        int resultSize = 0;
 
         // convert the query into a hash
         String queryHash = ConvertToHash.convertToHashSHA256(this.process.selectQuery);
@@ -42,7 +41,7 @@ public class QueryRelationalDBCache implements Callable<ReturnBox>  {
                     counter++;
                 }
                 box.resultSetSize = counter;
-                this.updateRDBCacheWithQueryNumber(queryHash);// I need to update the database
+                this.updateRDBCacheWithQueryNumber(queryHash);// I need to update the database for this solution
             } else { // cache miss
                 box.foundSomething = false;
                 box.queryTime = System.currentTimeMillis() - start;
@@ -54,6 +53,7 @@ public class QueryRelationalDBCache implements Callable<ReturnBox>  {
         return box;
     }
 
+    /** Updates the time of execution of a set of answers in a database*/
     private void updateRDBCacheWithQueryNumber(String queryHash) {
         if(this.process.executionTime != 0) {// do it only the first time we execute this query
             return;

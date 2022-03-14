@@ -486,7 +486,7 @@ public class QueryVault {
         String res = "";
         for(String bN : bindigNames) {
             String value = result.getValue(bN).toString();
-            res += value + ",";
+            res += value + " ";
         }
         return res;
     }

@@ -119,4 +119,10 @@ public class SqlStrings {
     public static final String UPDATE_RECENTLY_USED_QUERY_NUMBER =
             "UPDATE %s.baselinecache set query_number = ? where query_hash = ?";
 
+    public static final String GET_COUNT_BASELINECACHE =
+            "SELECT COUNT(*) FROM %s.baselinecache;";
+
+    public static final String GET_SIZE_BASELINECACHE =
+            "SELECT pg_size_pretty( pg_total_relation_size('%s.baselinecache') );";
+
 }

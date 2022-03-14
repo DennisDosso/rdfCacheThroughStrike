@@ -102,8 +102,8 @@ public class ExtractQueriesFromWikidataLog {
         if(query.contains("*/"))
             return false;
 
-//        if(query.matches("(.*)WHERE(.*)\\*(.*)"))
-//            return false;
+        if(query.matches("(.*)WHERE(.*)\\*(.*)"))
+            return false;
 
         if(query.contains("SUBSTR"))
             return false;

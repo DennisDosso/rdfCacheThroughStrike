@@ -59,6 +59,7 @@ public class DealWithCapOnRDBCacheThread implements Callable<ReturnBox> {
             // first, find the query number of the query that has been used least recently
             int least_recently_used_id = this.getLeastRecentlyUsedQueryNumberInRDBCacheTable();
             int deletedRows = this.removeTriplesFromThisInsertiontime(least_recently_used_id);
+//            System.out.println("[DEBUG] deleted these many tuples " + deletedRows);
             currentSize -= deletedRows;
         } while (currentSize > cap);
     }
@@ -66,7 +67,8 @@ public class DealWithCapOnRDBCacheThread implements Callable<ReturnBox> {
     private int removeTriplesFromThisInsertiontime(int least_recently_used_id) throws SQLException {
         String sql  = String.format(SqlStrings.DELETE_LEAST_RECENTLY_USED_QUERY_IN_BASELINECACHE, ProjectValues.schema);
         PreparedStatement ps = this.process.rdbConnection.prepareStatement(sql);
-        int deleted =   ps.executeUpdate();
+        ps.setInt(1, least_recently_used_id);
+        int deleted = ps.executeUpdate();
         ps.close();
         return deleted;
     }

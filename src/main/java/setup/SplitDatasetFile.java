@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 /** It seems that rdf4j requires a lot of time (too much) to import a database of 100M
@@ -52,7 +53,7 @@ public class SplitDatasetFile {
 				
 				
 				if(triplesCounter % 250000 == 0) {// each 250000 lines, create a new file
-					if(line.endsWith(";")) { // need to proceed until the next '.'
+					if(line.endsWith(";") || line.endsWith(",")) { // need to proceed until the next '.'
 						writer.write(line);
 						writer.newLine();
 						continue;

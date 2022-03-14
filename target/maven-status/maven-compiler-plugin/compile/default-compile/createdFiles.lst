@@ -8,6 +8,7 @@ properties/ProjectPaths.class
 batch/QueryingProcess.class
 utils/SilenceLog4J.class
 threads/QueryWholeDBThread.class
+setup/ImportLargeturtleDatabase.class
 utils/SqlStrings.class
 utils/PostgreHandler.class
 test/printing/HelloWorld.class
@@ -15,6 +16,7 @@ properties/ProjectValues.class
 threads/UpdateRDBDatabaseWithTriplesFromLineageThread.class
 batch/wholedb/RunOnWholeDB.class
 threads/QueryDiskCacheThread.class
+setup/ImportJSONDatabase.class
 batch/cache/RunWithCache.class
 threads/LineageComputationThread.class
 utils/CustomURI.class

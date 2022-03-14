@@ -62,9 +62,11 @@ public class CleanThingsUpWithParameters {
         }
 
         // truncate the table containing the tables with the data used for the caching, and reset autoincremental IDs
-        String sql = "TRUNCATE TABLE %s.triples; TRUNCATE TABLE %s.triplestimeframes; TRUNCATE TABLE %s.lineage_cache";
+        String sql = "TRUNCATE TABLE %s.triples; TRUNCATE TABLE %s.triplestimeframes; TRUNCATE TABLE %s.lineage_cache; TRUNCATE TABLE %s.baselinecache;";
         sql = String.format(sql, ProjectValues.schema, ProjectValues.schema, ProjectValues.schema, ProjectValues.schema);
         try {
+            // query being executed
+            System.out.println("query being executed to clean up: \n" + sql);
             PostgreHandler.getConnection(ProjectValues.produceJdbcString(), "Oppenheimer").prepareStatement(sql).execute();
             sql = "ALTER SEQUENCE %s.triples_tripleid_seq RESTART WITH 1;";
             sql = String.format(sql, ProjectValues.schema);

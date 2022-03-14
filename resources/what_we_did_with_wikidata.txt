@@ -3,4 +3,4 @@ In particular, we downloaded the queries of Interval 1 (All) at https://analytic
 
 From these, I took the first 1M of queries.
 Of these, I removed many queries that were not BGP and "strange"
-I remained with 315045 queries.
+I remained with 122097 queries.

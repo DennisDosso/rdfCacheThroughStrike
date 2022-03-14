@@ -34,26 +34,26 @@ public class QueryWholeDBAndSaveDataThread implements Callable<ReturnBox> {
             try(TupleQueryResult result = tupleQuery.evaluate()) {
                 // check if the result set is different from the emptyset
                 if(result.hasNext()) {
+                    // another operation that may take time is the first next()
                     BindingSet solution = result.next(); // this operation may also require time, this is why we take the time in this case
+                    box.queryTime = System.currentTimeMillis() - start;
+                    box.foundSomething = true;
+                    resultSetSize++;
+
                     String values = this.process.getValuesFromResult(solution);
                     box.results.add(values);
 
-                    box.queryTime = System.currentTimeMillis() - start;
-                    box.foundSomething = true;
-                    // another operation that may take time is the first next()
-                    resultSetSize++;
-
-                    // complete the operation and count how many triples we have. We only do this when this is the first time
+                    // complete the operation and count how many triples we have. We only do this when this is the last time
                     // we execute the query (we usually execute a query 10 times to take the average)
-                    if(this.process.executionTime == 0) {
+                    if(this.process.executionTime == 0 || this.process.executionTime >= ProjectValues.timesOneQueryIsExecuted) {
                         while(result.hasNext()) {
-                            result.next();
                             resultSetSize++;
 
                             solution = result.next();
                             values = this.process.getValuesFromResult(solution);
                             box.results.add(values);
                         }
+
                         box.resultSetSize = resultSetSize;
                     }
                 } else {

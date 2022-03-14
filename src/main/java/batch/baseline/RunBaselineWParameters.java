@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.*;
 
@@ -66,7 +67,7 @@ public class RunBaselineWParameters extends QueryingProcessParam {
         Path selectIn = Paths.get(ProjectPaths.selectQueryFile);
 
         try(BufferedReader selectReader = Files.newBufferedReader(selectIn)) {
-            this.getTheQueriesToPerform(selectReader);
+            this.getTheQueriesToPerform(selectReader, this.queryNumber);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -78,32 +79,63 @@ public class RunBaselineWParameters extends QueryingProcessParam {
         ReturnBox box = this.runOneQuery();
 
         ReturnBox dbBox = null;
-        long elapsed = 0;
         if(!box.foundSomething) {
             // in case of cache miss, ask the whole database
             dbBox = this.runQueryOnWholeDBSavingData();
-            // save the value in the cache relational database for future reference
-            elapsed = this.updateRelationalDatabase(dbBox);
         }
 
         // now that we performed the query, print the results
         try {
             this.printResultsForBaselineMethod(box, dbBox);
-            this.printTimeRequiredToUpdateRDB(elapsed);
         } catch (IOException e) {
             e.printStackTrace();
         }
 
-        // finally, perform the cap update if necessary
+        // At the end of an epoch, and if this is the last time we wun a query, update the cache and check if it is too big
         if(this.queryNumber % ProjectValues.epochLength == 0 && this.queryNumber > 0 && this.executionTime >= ProjectValues.timesOneQueryIsExecuted) {
-            this.dealWithTheCapOnBaseline();
+            // at the end of each epoch, we update the relational database with the last epoch of queries being seen
+            long requiredTime = this.updateTheCache();
+            long capRequiredTime = this.dealWithTheCapOnBaseline();
+
+            // at the end, print the time required to update the database (time to add tuples and time to impose the cap)
+            try {
+                this.printTimeRequiredToUpdateRDB(requiredTime + capRequiredTime);
+            } catch (IOException e) {
+                e.printStackTrace();
+                System.err.println("impossible to write update time");
+            }
         }
     }
 
-    private void dealWithTheCapOnBaseline() {
-        if(!ProjectValues.capRequired) {
-            return;
+    private long updateTheCache() {
+        // first, identify the query to perform
+        this.queryNumber = this.queryNumber - ProjectValues.epochLength;
+        long elapsed = 0;
+        for(int i = 0; i < ProjectValues.epochLength; i++) {
+            // now, for each of the queries we saw so far, take it
+            Path selectIn = Paths.get(ProjectPaths.selectQueryFile);
+
+            try(BufferedReader selectReader = Files.newBufferedReader(selectIn)) {
+                this.getTheQueriesToPerform(selectReader, this.queryNumber);
+            } catch (IOException e) {
+                e.printStackTrace();
+            } // now we have the query
+            // we run the query on the database to get its result set
+            ReturnBox dbBox = this.runQueryOnWholeDBSavingData();
+            // save the value in the cache relational database for future reference
+            elapsed += this.updateRelationalDatabase(dbBox);
+            this.queryNumber++; // move to the next query
         }
+        return elapsed;
+
+    }
+
+    private long dealWithTheCapOnBaseline() {
+        if(!ProjectValues.capRequired) {
+            return 0;
+        }
+
+        long start = System.currentTimeMillis();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<ReturnBox> future = executor.submit(new DealWithCapOnRDBCacheThread(this));
         ReturnBox rb = new ReturnBox();
@@ -119,15 +151,48 @@ public class RunBaselineWParameters extends QueryingProcessParam {
                 executor.shutdownNow();
         }
 
-        // write the time required to update due to the cap
-
-
+        return System.currentTimeMillis() - start;
 
     }
 
     private void printTimeRequiredToUpdateRDB(long elapsed) throws IOException {
-        if(this.executionTime == 0)
-            this.updateRDBFw.write(elapsed + "\n");
+        int size = this.getSizeOfRelationalCacheInTuples();
+        String prettySize = this.getSizeOfRelationalCacheInBytes();
+        this.updateRDBFw.write(elapsed + "," + size + "," + prettySize + "\n");
+    }
+
+    /** Gets the dimension in tuples of the cache as it is now
+     * */
+    private int getSizeOfRelationalCacheInTuples() {
+        int size = 0;
+        String sql = String.format(SqlStrings.GET_COUNT_BASELINECACHE, ProjectValues.schema);
+        try {
+            PreparedStatement pst = this.rdbConnection.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            rs.next();
+            size = rs.getInt(1);
+            rs.close();
+            pst.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return size;
+    }
+
+    private String getSizeOfRelationalCacheInBytes() {
+        String size = "";
+        String sql = String.format(SqlStrings.GET_SIZE_BASELINECACHE, ProjectValues.schema);
+        try {
+            PreparedStatement pst = this.rdbConnection.prepareStatement(sql);
+            ResultSet rs = pst.executeQuery();
+            rs.next();
+            size = rs.getString(1);
+            rs.close();
+            pst.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return size;
     }
 
     /**
@@ -170,7 +235,8 @@ public class RunBaselineWParameters extends QueryingProcessParam {
 
     private long updateRelationalDatabase(ReturnBox dbBox) {
         long elapsed = 0;
-        if(this.executionTime == 0) { // update the relational database only if it is the first time we run this query
+        if(this.executionTime >= ProjectValues.timesOneQueryIsExecuted) { // update the relational database only if it is the last time we are re-executing
+            // the same query (otherwise you would have a hit after the first miss in the same multiple-times execution)
             elapsed = this.insertQueryDataToCacheDatabase(dbBox);
         }
         return elapsed;
@@ -272,8 +338,8 @@ public class RunBaselineWParameters extends QueryingProcessParam {
      *
      *
      * */
-    public void getTheQueriesToPerform(BufferedReader selectReader) throws IOException {
-        for(int i = -1; i < this.queryNumber; ++i) {
+    public void getTheQueriesToPerform(BufferedReader selectReader, int qNumber) throws IOException {
+        for(int i = -1; i < qNumber; ++i) {
             selectQuery = selectReader.readLine();
         }
 
