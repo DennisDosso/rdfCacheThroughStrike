@@ -92,6 +92,19 @@ public class ProjectValues {
     public static String password = "Ulisse92";
     public static String schema = "public";
 
+    /** String to connect to the Virtuoso database */
+    public static String virtuosoConnString;
+    /** User to be used when connecting to the virtuoso server */
+    public static String virtuosoUser;
+    /** Password to connect to the virtuoso server */
+    public static String virtuosoPassword;
+
+    /** IRI that is used as the name of the main database */
+    public static String virtuosoMainDbIRI;
+
+    /** IRI that is used as the name of the cache*/
+    public static String virtuosoCacheIRI;
+
     /** Path of the property file. By default, the value is properties/values.properties
      * */
     public static String propertyPath = "properties/values.properties";
@@ -120,6 +133,13 @@ public class ProjectValues {
             useSupportLineageCache = Boolean.parseBoolean(map.get("useSupportLineageCache"));
             cleanCache = Boolean.parseBoolean(map.get("cleanCache"));
             queriesToCheck = Integer.parseInt(map.get("queriesToCheck"));
+
+            virtuosoConnString = map.get("virtuosoConnString");
+            virtuosoUser = map.get("virtuosoUser");
+            virtuosoPassword = map.get("virtuosoPassword");
+
+            virtuosoMainDbIRI = map.get("virtuosoMainDbIRI");
+            virtuosoCacheIRI = map.get("virtuosoCacheIRI");
 
             if(!timeframesRequired)
                 timeframes = 1;

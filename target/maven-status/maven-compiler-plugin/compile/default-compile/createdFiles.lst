@@ -1,4 +1,5 @@
 utils/ReadPropertyFile.class
+virtuoso/VirtuosoQueryingProcess.class
 threads/DealWithCapOnTheCacheBashThread.class
 utils/ReturnBox.class
 batch/wholedb/RunOnWholeDBwParam.class
@@ -8,7 +9,9 @@ properties/ProjectPaths.class
 batch/QueryingProcess.class
 utils/SilenceLog4J.class
 threads/QueryWholeDBThread.class
+threads/virtuoso/QueryWholeDBThread.class
 setup/ImportLargeturtleDatabase.class
+virtuoso/RunOnWholeDBwParam.class
 utils/SqlStrings.class
 utils/PostgreHandler.class
 test/printing/HelloWorld.class

@@ -1,6 +1,16 @@
 package utils;
 
 import org.apache.commons.validator.routines.UrlValidator;
+import org.apache.jena.atlas.lib.tuple.Tuple;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.datatypes.xsd.impl.XSDBaseStringType;
+import org.apache.jena.datatypes.xsd.impl.XSDDateType;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.NodeFactory;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.rdf.model.*;
 import org.eclipse.rdf4j.model.IRI;
 import org.eclipse.rdf4j.model.ValueFactory;
 import org.eclipse.rdf4j.model.impl.SimpleValueFactory;
@@ -36,13 +46,18 @@ public class TripleStoreHandler {
     public static Map<String, Repository> repositoryMap = new HashMap<>();
     public static Map<String, RepositoryConnection> connectionMap = new HashMap<>();
 
-    /**The indexes to be used with the DB. Default at spo*/
+    /**The indexes to be used with the DB. Default at spoc*/
     public static String indexes = "spoc";
 
     /** An rdf4j builder used to keep in RAM the triples of the cache to later use them to update the RDB */
     public static ModelBuilder creationModelBuilder;
     /** An rdf4j builder used to keep in RAM the triples to be removed from the cache*/
     public static ModelBuilder deletionModelBuilder;
+
+    /** In-memory graph used to build the cache */
+    public static Model virtuosoCreationModel;
+    /** In-memory graph used to remove old triples from the cache */
+    public static Model virtuosoDeletionModel;
 
     /** Opens a connection to a repository and associates it to its repositoryName.
      * If a repositoryName already exists, it
@@ -84,8 +99,128 @@ public class TripleStoreHandler {
         creationModelBuilder = new ModelBuilder().setNamespace("n", ProjectValues.namedGraphName);
     }
 
+    public static void initVirtuosoInMemoryGraph() {
+        virtuosoCreationModel = ModelFactory.createDefaultModel();
+    }
+
     public static void addTripleToCreation(String sub, String pred, String obj) {
         TripleStoreHandler.addTripleToBuilder(creationModelBuilder, sub, pred, obj);
+    }
+
+    public static void addTripleToCreationUsingVirtuoso(String sub, String pred, String obj) {
+        TripleStoreHandler.addTripleToVirtuosoModel(virtuosoCreationModel, sub, pred, obj);
+        // todo riprendi da qui
+    }
+
+    private static void addTripleToVirtuosoModel(Model m, String sub, String pred, String obj) {
+        UrlValidator urlValidator = new UrlValidator();
+        // DBPedia is always hard to work with
+        if(!urlValidator.isValid(sub))
+            sub = "http://dbpedia.org/node/" + sub;
+        if(!urlValidator.isValid(pred))
+            sub = "http://dbpedia.org/property/" + pred;
+
+        if(urlValidator.isValid(obj)) {
+            // todo controllare che funzi correttamente
+            Resource subjNode = m.createResource(sub);
+            Property p = m.createProperty(pred);
+            Resource objNode = m.createResource(obj);
+            m.add(subjNode, p, objNode);
+        } else {
+            // the could be a literal, or a "broken" IRI, one of those of Dbpedia
+            //first let's try to see what we got
+            String[] parts = StripObjectFromDatatype.stripObjectFromDatatype(obj);
+            if(parts == null) {
+                try{
+                    // the object is a broken IRI since we were unable to find a datatype
+                    Resource subjNode = m.createResource(sub);
+                    Property p = m.createProperty(pred);
+                    m.createResource(subjNode).addProperty(p, obj);
+                } catch (ModelException e) {
+                    // we do not do anything, this triple is simply lost
+                    System.err.println("Raised model exception with triple "
+                            + sub + " " + pred + " " + obj);
+                }
+            } else {
+                // it is some form of literal
+
+                    Resource subjNode = m.createResource(sub);
+                    Property p = m.createProperty(pred);
+
+                    if(parts[2].equals("plain")) { // generic case
+                        Literal l = ResourceFactory.createPlainLiteral(parts[0]);
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("@")) { // language
+                        Literal l = ResourceFactory.createLangLiteral(parts[0], parts[1]);
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("integer")) {
+                        Literal l = ResourceFactory.createTypedLiteral(Integer.parseInt(parts[0]));
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("double")) {
+                        Literal l = ResourceFactory.createTypedLiteral(Double.parseDouble(parts[0]));
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("float")) {
+                        Literal l = ResourceFactory.createTypedLiteral(Float.parseFloat(parts[0]));
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("date")) {
+                        Literal l = ResourceFactory.createTypedLiteral(parts[0], XSDDatatype.XSDdate);
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("dateTime")) {
+                        Literal l = ResourceFactory.createTypedLiteral(parts[0], XSDDatatype.XSDdateTime);
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("nonNegativeInteger")) {
+                        Literal l = ResourceFactory.createTypedLiteral(parts[0], XSDDatatype.XSDnonNegativeInteger);
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("gYear")) {
+                        Literal l = ResourceFactory.createTypedLiteral(parts[0], XSDDatatype.XSDgYear);
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("gMonthDay")) {
+                        Literal l = ResourceFactory.createTypedLiteral(parts[0], XSDDatatype.XSDgMonthDay);
+                        m.add(subjNode, p, l);
+                    }
+
+                    if(parts[2].equals("custom")) {// custom datatype from dbpedia
+                        // create datatype
+                        RDFDatatype custom = new XSDBaseStringType(parts[3] + parts[4]);
+                        Literal l = ResourceFactory.createTypedLiteral(parts[0], custom);
+                        m.add(subjNode, p, l);
+
+                    }
+                    if(parts[2].equals("XMLSchema")) {
+                        RDFDatatype custom = new XSDBaseStringType(parts[3] + parts[4]);
+                        Literal l = ResourceFactory.createTypedLiteral(parts[0], custom);
+                        m.add(subjNode, p, l);
+
+                    }
+                    if(parts[2].equals("unknown")) {
+                        System.out.println("[WARNING] this triple has a special datatype, thus is added " +
+                                "as simple literal: " +
+                                sub + " " + pred + " " + obj);
+
+                        Literal l = ResourceFactory.createPlainLiteral(obj.replaceAll("\"", ""));
+                        m.add(subjNode, p, l);
+                    }
+                }
+
+        }// end of the creation of the triple
     }
 
     private static void addTripleToBuilder(ModelBuilder builder, String sub, String pred, String obj) {

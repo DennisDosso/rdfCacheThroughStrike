@@ -244,6 +244,52 @@
             <version>1.78</version>
         </dependency>
 
+<!--        VIRTUOSO     -->
+        <!--        Local dependencies (downloaded from virtuoso website and in local disk) -->
+        <dependency>
+            <groupId>virt_jena4</groupId>
+            <artifactId>virtuoso_jena</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>/Users/dennisdosso/Documents/Virtuoso/jena_provider/virt_jena4.jar</systemPath>
+        </dependency>
+
+        <dependency>
+            <groupId>virtjdbc4_3</groupId>
+            <artifactId>virtjdbc4_3</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>/Users/dennisdosso/Documents/Virtuoso/jena_provider/virtjdbc4_3.jar</systemPath>
+        </dependency>
+
+        <!--        Dependencies only for Jena (from MVNRepository)-->
+        <!-- https://mvnrepository.com/artifact/org.apache.jena/jena-core -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-core</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.apache.jena/jena-arq -->
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-arq</artifactId>
+            <version>4.4.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+            <version>1.7.36</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-nop -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-nop</artifactId>
+            <version>1.7.36</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 

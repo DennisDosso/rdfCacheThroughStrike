@@ -63,8 +63,6 @@ public class ImportDatabase {
         RepositoryConnection conn = db.getConnection();
 
         for(File f : fileList) {
-            // used to have the current date
-            Calendar rightNow = Calendar.getInstance();
 
             if(!f.exists())
                 continue;
@@ -77,6 +75,7 @@ public class ImportDatabase {
                 RDFParser rdfParser = Rio.createParser(RDFFormat.TURTLE);
                 rdfParser.getParserConfig().set(BasicParserSettings.VERIFY_URI_SYNTAX, false); // to disable the check on the syntax of a URI
                 rdfParser.getParserConfig().set(BasicParserSettings.VERIFY_RELATIVE_URIS, false); // to disable the check on the structure of a URI
+//                rdfParser.getParserConfig().set(BasicParserSettings., false);
 
                 GraphQueryResult res = QueryResults.parseGraphBackground(input, baseURI, rdfParser);
                 List<Statement> l = new ArrayList<>();
@@ -84,9 +83,18 @@ public class ImportDatabase {
                     Statement st = res.next();
                     l.add(st);
                 }
-                conn.add(l);
-                conn.commit();
+                try {
+                    conn.add(l);
+                    conn.commit();
+                } catch (IllegalArgumentException ile) {
+                    ile.printStackTrace();
+                    System.out.println("[DEBUG] error with file " + f.getName());
+                    res.close();
+                    continue;
+                }
 
+                // get the current moment in time
+                Calendar rightNow = Calendar.getInstance();
 //                conn.add(input, baseURI, RDFFormat.TURTLE);
                 System.out.println("Completed successfully the import of file " + f.getName() + " at " + rightNow.get(Calendar.DAY_OF_MONTH) + "/" + rightNow.get(Calendar.MONTH) + " - " + rightNow.get(Calendar.HOUR_OF_DAY) + ":" + rightNow.get(Calendar.MINUTE));
 

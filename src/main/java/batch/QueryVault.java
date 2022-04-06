@@ -1,6 +1,12 @@
 package batch;
 
 import com.beust.jcommander.Parameter;
+import org.apache.jena.graph.Graph;
+import org.apache.jena.graph.Node;
+import org.apache.jena.graph.Triple;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelGraphInterface;
 import org.eclipse.rdf4j.model.Statement;
 import org.eclipse.rdf4j.query.*;
 import org.eclipse.rdf4j.repository.RepositoryConnection;
@@ -8,6 +14,9 @@ import properties.ProjectValues;
 import utils.ReturnBox;
 import utils.SqlStrings;
 import utils.TripleStoreHandler;
+import virtuoso.jena.driver.VirtGraph;
+import virtuoso.jena.driver.VirtuosoQueryExecution;
+import virtuoso.jena.driver.VirtuosoQueryExecutionFactory;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -16,6 +25,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -70,6 +80,13 @@ public class QueryVault {
 
     /** Connection to a cache. This value is NOT initialized in the constructor */
     public RepositoryConnection cacheRepositoryConnection;
+
+
+    /** The connection to the main Virtuoso Database */
+    public VirtGraph virtuosoDatabase;
+
+    /** The connection to the cache Virtuoso database */
+    public VirtGraph virtuosoCache;
 
     /** Given a triple in the form of a string array made of a subject, a predicate
      * and an object, checks in the RDB if this triple is already present or not.
@@ -250,6 +267,27 @@ public class QueryVault {
         } catch(MalformedQueryException e) {
             e.printStackTrace();
             System.exit(2);
+        }
+
+        return lineage;
+    }
+
+    /** Same as computeQuerylineage, but using Virtuoso as DBMS
+     * */
+    public List<String[]> computeQueryLineageWithVirtuoso(String query) {
+        // list containing the lineages
+        List<String[]> lineage = new ArrayList<>();
+        // prepare the construct query
+        org.apache.jena.query.Query constructQuery = QueryFactory.create(query);
+        VirtuosoQueryExecution vqu = VirtuosoQueryExecutionFactory.create (constructQuery, this.virtuosoDatabase);
+        // execute the construct
+        Model model = vqu.execConstruct();
+        Graph g = model.getGraph();
+        // iterate through the new graph and add the triples to the lineage
+        for (Iterator i = g.find(Node.ANY, Node.ANY, Node.ANY); i.hasNext();) {
+            Triple t = (Triple)i.next(); // get one triple and add it to the lineage
+            String[] lin = new String[] {t.getSubject().toString(), t.getPredicate().toString(), t.getObject().toString()};
+            lineage.add(lin);
         }
 
         return lineage;
