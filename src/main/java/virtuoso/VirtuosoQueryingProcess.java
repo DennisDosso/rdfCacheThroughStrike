@@ -464,6 +464,68 @@ public class VirtuosoQueryingProcess extends QueryVault {
     }
 
 
+    protected void dealWithTimeframesWithVirtuoso() {
+        if(this.queryNumber % ProjectValues.timeframeLenght == 0 && this.queryNumber > 0 && this.executionTime == ProjectValues.timesOneQueryIsExecuted && ProjectValues.timeframesRequired) {
+            if(this.timeframe < ProjectValues.timeframes) {
+                // also, in the first (ProjectValues.timeframes - 1) times we DO NOT need to execute the
+                // cooldown strategy, we only limit ourselves to increase the timeframe count
+                return;
+            }
+
+            System.out.println("[DEBUG] dealing with timeframes at query " + this.queryNumber);
+
+            // here we only implemented the time-based cooldown strategy
+            long time =  this.timeBasedCoolDownStrategyWithVirtuoso();
+            // write down the result
+            try {
+                coolDownWriter.write(this.timeframe + "," + time + "\n");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    protected long timeBasedCoolDownStrategyWithVirtuoso() {
+        long start = System.currentTimeMillis();
+        // get the number of the oldest timeframe in the RDB and delete it
+        try {
+            int oldestTimeframe = (this.timeframe - ProjectValues.timeframes) + 1;
+            this.removeOldestTimeframe(oldestTimeframe);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        long elapsed = System.currentTimeMillis() - start;
+        return elapsed;
+    }
 
 
+    /** The method deletes from the timeframe table all the tuples belonging to that timeframe.
+     * As a consequence, their strike count is updated in the supporting RDB
+     *
+     * @param oldestTimeframe the number identiying the latest timeframe, which is the one to be deleted*/
+    private void removeOldestTimeframe(int oldestTimeframe) throws SQLException {
+        // prepare the TripleStoreHandler to held in RAM the triples to be later deleted from the cache
+        TripleStoreHandler.initDeletionWithVirtuoso();
+
+        // first, get triple ID and strike count of the triples that need to be deleted
+        String sql = String.format(SqlStrings.GET_DELENDUM_TIMEFRAME_TRIPLES, ProjectValues.schema);
+        PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
+        ps.setInt(1, oldestTimeframe);
+        ResultSet rs = ps.executeQuery();
+
+        while(rs.next()) { // for each triple to be deleted
+            int tripleID = rs.getInt(1); // get its ID
+            int strikes = rs.getInt(2); // get its strikes number
+
+            // reduce these strikes from the main table
+            this.reduceStrikesCountForThisTripleId(tripleID, strikes);
+            // check if now this triple needs to be deleted from the cache (went below threshold)
+            this.checkIfThisTripleIdNeedsToBeDeletedFromCacheWithVirtuoso(tripleID);
+            // finally remove it from the oldest timeframe
+            this.removeTripleFromThisTimeframe(tripleID, oldestTimeframe);
+        }
+
+        // commit the deletion from the cache
+        TripleStoreHandler.removeTriplesFromCacheUsingDeletionBuilder();
+    }
 }

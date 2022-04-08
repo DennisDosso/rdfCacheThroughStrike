@@ -306,6 +306,16 @@ public class QueryVault {
             int lowest_insertiontime =  this.getLowestInsertiontime();
             int deletedRows = this.removeTriplesFromThisInsertiontime(lowest_insertiontime);
             currentSize -= deletedRows;
+        } while (currentSize > timeframeCap);
+    }
+
+    public void reduceTimeFrameSizeWithVirtuoso(int timeFrameSize, int timeframeCap) throws SQLException {
+        int currentSize = timeFrameSize;
+        // remove triples from the timeframe in bunch as long as we need
+        do {
+            int lowest_insertiontime =  this.getLowestInsertiontime();
+            int deletedRows = this.removeTriplesFromThisInsertiontimeWithVirtuoso(lowest_insertiontime);
+            currentSize -= deletedRows;
 //            System.out.println("[DEBUG] deleted rows were " + deletedRows + "\ncurrentSize now is " + currentSize);
         } while (currentSize > timeframeCap);
 //        System.out.println("[DEBUG] we exited with currentSize " + currentSize + " and timeframecap of " + timeframeCap);
@@ -313,9 +323,7 @@ public class QueryVault {
 
     /** Gets  the oldest triples (the oldest lineage block) in the current timeframe */
     private int getLowestInsertiontime() throws SQLException {
-//        System.out.println("doing this query");
         String sq = String.format(SqlStrings.FIND_OLDEST_TRIPLES_IN_TIMEFRAME, ProjectValues.schema, ProjectValues.schema);
-//        System.out.println(sq + " where the timeframe is " + this.timeframe);
         PreparedStatement min = this.rdbConnection.prepareStatement(sq);
         min.setInt(1, this.timeframe);
         ResultSet rs = min.executeQuery();
@@ -335,6 +343,15 @@ public class QueryVault {
 
         // remove them from the current timeframe both in the RDB and the cache
         return this.removeTheseTriplesFromCurrentTimeframe(triplesIDs);
+    }
+
+    /** Removes from the current timeframe the triples corresponding to the indicated insertion time*/
+    private int removeTriplesFromThisInsertiontimeWithVirtuoso(int insertion_time) throws SQLException {
+        // first, find triples with the id corresponding to this insertion time
+        List<Integer> triplesIDs = this.findTriplesWithThisInsertionTime(insertion_time);
+
+        // remove them from the current timeframe both in the RDB and the cache
+        return this.removeTheseTriplesFromCurrentTimeframeWithVirtuoso(triplesIDs);
     }
 
     /** Returns a list of triples is from the RDB belonging to a specific insertion time
@@ -368,7 +385,7 @@ public class QueryVault {
             rs = ps.executeQuery();
             if(rs.next()) {
                 int strikes = rs.getInt(1);
-                // now update the main table with this reduction of strikes and check if needs to be deleted from the cache
+                // now update the main table with this reduction of strikes and check if it needs to be deleted from the cache
                 this.reduceStrikesCountForThisTripleId(tripleID, strikes);
                 this.checkIfThisTripleIdNeedsToBeDeletedFromCache(tripleID);
                 // finally, delete the triple from the timeframe in the RDB
@@ -377,6 +394,34 @@ public class QueryVault {
         }
         ps.close(); rs.close();
         TripleStoreHandler.removeTriplesFromCacheUsingDeletionBuilder();
+        return deletedTriples;
+    }
+
+    private int removeTheseTriplesFromCurrentTimeframeWithVirtuoso(List<Integer> triplesIDs) throws SQLException {
+        // prepare the model in the RAM of triples to be deleted from the cache
+        TripleStoreHandler.initDeletionWithVirtuoso();
+
+        // first, get the number of strikes on the triple in question
+        String sql = String.format(SqlStrings.GET_TIMEFRAME_TRIPLE_STRIKES, ProjectValues.schema);
+        PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
+        int deletedTriples = 0;
+        ResultSet rs = null;
+        for(int tripleID : triplesIDs) {
+            ps.setInt(1, tripleID);
+            ps.setInt(2, this.timeframe);
+            rs = ps.executeQuery();
+            if(rs.next()) {
+                int strikes = rs.getInt(1);
+                // now update the main table with this reduction of strikes and check if it needs to be deleted from the cache
+                this.reduceStrikesCountForThisTripleId(tripleID, strikes);
+                this.checkIfThisTripleIdNeedsToBeDeletedFromCacheWithVirtuoso(tripleID);
+                // finally, delete the triple from the timeframe in the RDB
+                deletedTriples += this.removeTripleFromThisTimeframe(tripleID, this.timeframe);
+            }
+        }
+        ps.close(); rs.close();
+        // let us now remove all the triples from the cache
+        TripleStoreHandler.removeTriplesFromCacheWithVirtuoso(virtuosoCache);
         return deletedTriples;
     }
 
@@ -393,7 +438,7 @@ public class QueryVault {
         ps.close();
     }
 
-    private int removeTripleFromThisTimeframe(int tripleID, int timeframe) throws SQLException {
+    protected int removeTripleFromThisTimeframe(int tripleID, int timeframe) throws SQLException {
         String sql = String.format(SqlStrings.DELETE_TRIPLE_FROM_TIMEFRAME, ProjectValues.schema);
         PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
         ps.setInt(1, tripleID);
@@ -421,6 +466,25 @@ public class QueryVault {
             if(Math.log(strikes + 1) <= ProjectValues.creditThreshold) {
                 // it needs to be deleted from cache -- add it to the RAM cache that we will use later
                 TripleStoreHandler.addTripleToDeletion(sub, pred, obj);
+            }
+        }
+    }
+
+    protected void checkIfThisTripleIdNeedsToBeDeletedFromCacheWithVirtuoso(int tripleID) throws SQLException {
+        // first, check the strike count of the triple
+        String q = String.format(SqlStrings.GET_TRIPLE_STRIKES, ProjectValues.schema);
+
+        PreparedStatement ps = this.rdbConnection.prepareStatement(q);
+        ps.setInt(1, tripleID);
+        ResultSet rs = ps.executeQuery();
+        if(rs.next()) {
+            String sub = rs.getString(1);
+            String pred = rs.getString(2);
+            String obj = rs.getString(3);
+            int strikes = rs.getInt(4);
+            if(Math.log(strikes + 1) <= ProjectValues.creditThreshold) {
+                // it needs to be deleted from cache -- add it to the RAM cache that we will use later
+                TripleStoreHandler.addTripleToDeletionUsingVirtuoso(sub, pred, obj);
             }
         }
     }
@@ -457,7 +521,7 @@ public class QueryVault {
         }
     }
 
-    private long timeBasedCoolDownStrategy() {
+    protected long timeBasedCoolDownStrategy() {
         long start = System.currentTimeMillis();
         // get the number of the oldest timeframe in the RDB and delete it
         try {

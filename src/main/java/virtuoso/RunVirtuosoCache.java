@@ -237,7 +237,7 @@ public class RunVirtuosoCache extends VirtuosoQueryingProcess {
         this.printUpdateAboutTheCache(rb);
 
         // deal with the timeframe update
-        this.dealWithTimeframes();
+        this.dealWithTimeframesWithVirtuoso();
     }
 
     private void printUpdateAboutTheCache(ReturnBox rb) {

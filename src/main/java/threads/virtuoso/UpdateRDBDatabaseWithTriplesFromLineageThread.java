@@ -44,7 +44,9 @@ public class UpdateRDBDatabaseWithTriplesFromLineageThread implements Callable<R
 
     @Override
     public ReturnBox call()  {
-        TripleStoreHandler.initModelBuilder();
+        // init the in-memory graph that helps us to know the triples to add to the cache
+        TripleStoreHandler.initVirtuosoInMemoryGraph();
+
         ReturnBox rb = new ReturnBox();
         // first, upload triples in the database
         try{
@@ -69,10 +71,10 @@ public class UpdateRDBDatabaseWithTriplesFromLineageThread implements Callable<R
                 int currentStrikes = b.strikes + 1;
                 if(Math.log(currentStrikes + 1) >= ProjectValues.creditThreshold) {
                     if(currentStrikes - 1 == 0) // need to deal with a special degenerate case to avoid log exception
-                        TripleStoreHandler.addTripleToCreation(triple[0], triple[1], triple[2]);
+                        TripleStoreHandler.addTripleToCreationUsingVirtuoso(triple[0], triple[1], triple[2]);
                     else {
-                        if(Math.log(currentStrikes) < ProjectValues.creditThreshold)
-                            TripleStoreHandler.addTripleToCreation(triple[0], triple[1], triple[2]);
+                        if(Math.log(currentStrikes) > ProjectValues.creditThreshold)
+                            TripleStoreHandler.addTripleToCreationUsingVirtuoso(triple[0], triple[1], triple[2]);
                     }
                 }
             }
@@ -86,7 +88,7 @@ public class UpdateRDBDatabaseWithTriplesFromLineageThread implements Callable<R
         }
 
         // finalize process of addition to the cache
-        TripleStoreHandler.addTriplesFromCreationBuilderToThisConnection(TripleStoreHandler.CACHE);
+        TripleStoreHandler.addTriplesToVirtuosoCache(this.process.virtuosoCache); // todo check che funzioni
 
         // completed one update based on one lineage, we move to the "next" lineage
         this.process.insertionToken++;

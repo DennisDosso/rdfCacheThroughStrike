@@ -23,9 +23,11 @@ import org.eclipse.rdf4j.repository.RepositoryException;
 import org.eclipse.rdf4j.repository.sail.SailRepository;
 import org.eclipse.rdf4j.sail.nativerdf.NativeStore;
 import properties.ProjectValues;
+import virtuoso.jena.driver.VirtGraph;
 
 import java.io.File;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 
 import static org.eclipse.rdf4j.model.util.Values.iri;
@@ -100,6 +102,7 @@ public class TripleStoreHandler {
     }
 
     public static void initVirtuosoInMemoryGraph() {
+
         virtuosoCreationModel = ModelFactory.createDefaultModel();
     }
 
@@ -109,7 +112,6 @@ public class TripleStoreHandler {
 
     public static void addTripleToCreationUsingVirtuoso(String sub, String pred, String obj) {
         TripleStoreHandler.addTripleToVirtuosoModel(virtuosoCreationModel, sub, pred, obj);
-        // todo riprendi da qui
     }
 
     private static void addTripleToVirtuosoModel(Model m, String sub, String pred, String obj) {
@@ -316,12 +318,26 @@ public class TripleStoreHandler {
         connectionMap.get(connectionName).commit();
     }
 
+    public static void addTriplesToVirtuosoCache(VirtGraph cache) {
+        // iterate through the triples in the in-memory cache
+        Graph g = virtuosoCreationModel.getGraph();
+        for (Iterator i = g.find(Node.ANY, Node.ANY, Node.ANY); i.hasNext();) {
+            Triple t = (Triple)i.next(); // get one triple and add it to the lineage
+            cache.add(t);
+        }
+        virtuosoCreationModel.removeAll(); // clear the model, we are done
+    }
+
     /** Creates the builder that will keep in RAM the triples that later we will delete
      * from the in-disk cache
      *
      * */
     public static void initDeletion() {
         deletionModelBuilder = new ModelBuilder().setNamespace("n", ProjectValues.namedGraphName);
+    }
+
+    public static void initDeletionWithVirtuoso() {
+        virtuosoDeletionModel = ModelFactory.createDefaultModel();
     }
 
     public static void removeTriplesFromCacheUsingDeletionBuilder() {
@@ -336,12 +352,27 @@ public class TripleStoreHandler {
         }
     }
 
+    public static void removeTriplesFromCacheWithVirtuoso(VirtGraph cache) {
+        // iterate through the triples in the in-memory cache
+        Graph g = virtuosoDeletionModel.getGraph();
+        for (Iterator i = g.find(Node.ANY, Node.ANY, Node.ANY); i.hasNext();) {
+            Triple t = (Triple)i.next(); // get one triple and add it to the lineage
+            cache.remove(t);
+        }
+        virtuosoDeletionModel.removeAll(); // clear the model, we are done
+    }
+
     /** Given three strings representing a triple, it adds this triple to a builder in RAM.
      * This builder will be used later to remove the triples it contains from the cache
      *
      * */
     public static void addTripleToDeletion(String sub, String pred, String obj) {
         TripleStoreHandler.addTripleToBuilder(deletionModelBuilder, sub, pred, obj);
+    }
+
+
+    public static void addTripleToDeletionUsingVirtuoso(String sub, String pred, String obj) {
+        TripleStoreHandler.addTripleToVirtuosoModel(virtuosoDeletionModel, sub, pred, obj);
     }
 
 }

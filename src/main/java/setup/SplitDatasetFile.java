@@ -42,17 +42,20 @@ public class SplitDatasetFile {
 			BufferedWriter writer = null;
 			
 			List<String> prefixes = new ArrayList<>();
-			
+			int x = 500000;
+
 			while((line = reader.readLine()) != null) {
-				
+				line = filterTheLine(line);
+
 				// take care of the prefixes
 				if(line.contains("@prefix")) {
 					prefixes.add(line);
 					continue;
 				}
-				
-				
-				if(triplesCounter % 250000 == 0) {// each 250000 lines, create a new file
+
+				if(triplesCounter % x == 0) {// IN CASE WE NEED TO CHANGE FILE
+					// we need first to check for some possible problems when dealing with lines (e.g., Wikidata has some bad boyz)
+
 					if(line.endsWith(";") || line.endsWith(",")) { // need to proceed until the next '.'
 						writer.write(line);
 						writer.newLine();
@@ -96,6 +99,14 @@ public class SplitDatasetFile {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static String filterTheLine(String line) {
+		String toReturn = "";
+
+		// first, delete the geo locations
+		toReturn = line.replaceAll("\\^\\^geo:wktLiteral", "");
+		return toReturn;
 	}
 	
 	public static void main(String[] args) {

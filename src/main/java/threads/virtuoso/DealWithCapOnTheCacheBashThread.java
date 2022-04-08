@@ -40,7 +40,7 @@ public class DealWithCapOnTheCacheBashThread implements Callable<ReturnBox>  {
 
             // if necessary, reduce the size of the current timeframe
             if(timeFrameSize > timeframeCap) {
-                this.process.reduceTimeFrameSize(timeFrameSize, timeframeCap);
+                this.process.reduceTimeFrameSizeWithVirtuoso(timeFrameSize, timeframeCap);
             }
 
             // re-run the query
