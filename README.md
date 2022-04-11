@@ -232,4 +232,38 @@ And then csv lines with the following metadata:
 * dimension of the result set (significant if we had a hit, in which case there is the possibility that 
 we do not have a complete result set)
 
+## Dealing with Virtuoso
+
+THe same experiments can be made using Virtuoso instead. 
+
+#### Whole Database
+
+We can interrogate the database without using the cache with the class 
+
+virtuoso/RunOnWholeDBwParam.java
+
+The in-line parameters for this call using slurm are:
+-QN query number
+-MD main directory
+-ET execution time (how many times the same query is run)
+-QC query class (which type of query is run)
+-VP path of the values.properties file
+
+The main directory is the directory where all the computations are done. 
+It is assumed that the database is located in MS/db
+the selectQueryFile is located in <MD>/queries/Q<queryClass>.txt,
+the construct query file is located in <MD>/queries/construct_Q<queryClass>.txt,
+the results are saved in 
+<MD>/results/whole_db/Q<queryClass>_whole_db_results.txt and in
+<MD>/results/cache/Q<currentQueryClass>_cache_times.txt
+
+Properties to set in values.properties:
+* virtuosoConnString, the string to connect to the Virtuoso Database (usually jdbc:virtuoso://localhost:1111),
+* the virtuosoUser
+* the virtuosoPassword.
+* virtuosoMainDbIRI: the IRI of the main database
+* virtuosoCacheIRI: name of the cache database
+
+
+
 

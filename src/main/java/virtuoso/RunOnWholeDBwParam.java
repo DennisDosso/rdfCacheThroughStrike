@@ -14,7 +14,13 @@ import java.nio.file.Paths;
 import java.sql.SQLException;
 
 /** Class that runs a file of queries on the whole DB. Input parameters are:
- * <li>-QN number of the current query</li>*/
+ * <li>-QN number of the current query</li>
+ * <li>MD main directory</li>
+ * <li>ET execution time (how many times the same query is run)</li>
+ * <li>QC query class (which type of query is run, here "wiki")</li>
+ * <li>VP path of the values.properties file</li>
+ *
+ * */
 public class RunOnWholeDBwParam extends VirtuosoQueryingProcess {
 
     public RunOnWholeDBwParam() {
