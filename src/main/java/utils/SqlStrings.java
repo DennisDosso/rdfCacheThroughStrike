@@ -125,4 +125,10 @@ public class SqlStrings {
     public static final String GET_SIZE_BASELINECACHE =
             "SELECT pg_size_pretty( pg_total_relation_size('%s.baselinecache') );";
 
+    public static final String CHECK_EMPTY_QUERY =
+            "SELECT * FROM %s.emptycache WHERE query = ?;";
+
+    public static final String INSERT_EMPTY_QUERY =
+            "INSERT INTO %s.emptycache(query) VALUES (?);";
+
 }

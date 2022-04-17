@@ -36,12 +36,29 @@ public class QueryWholeDBThread implements Callable<ReturnBox>  {
         int resultSetSize = 0;
 
         // prepare the query
-        Query tupleQuery = QueryFactory.create(this.process.selectQuery);
-        VirtuosoQueryExecution vqu = VirtuosoQueryExecutionFactory.create(tupleQuery, this.process.virtuosoDatabase ); // submit the query to the database
+        Query tupleQuery = null;
+        try {
+            tupleQuery = QueryFactory.create(this.process.selectQuery);
+        } catch (Exception e1) {
+            System.err.println("[DEBUG] error when invoking the QueryFactory create with query " + this.process.selectQuery);
+            e1.printStackTrace();
+            System.exit(-1);
+        }
+
+        VirtuosoQueryExecution vqu = null;
+        try{
+            vqu = VirtuosoQueryExecutionFactory.create(tupleQuery, this.process.virtuosoDatabase ); // submit the query to the database
+        } catch (Exception e) {
+            System.err.println("[DEBUG] error when invoking create");
+            e.printStackTrace();
+            System.exit(-1);
+        }
         ResultSet results = vqu.execSelect(); // run the select query
+//        System.out.println("[DEBUG] list of vars: " + results.getResultVars());
         box.queryTime = System.currentTimeMillis() - start;
 
         if(results.hasNext()) {
+//            System.out.println("[DEBUG] Yee, we found something!");
             box.foundSomething = true;
 
             // if necessary, compute the size of the result set
@@ -53,9 +70,10 @@ public class QueryWholeDBThread implements Callable<ReturnBox>  {
                 box.resultSetSize = resultSetSize;
             }
         } else { // empty answer
+//            System.out.println("[DEBUG] We didn't find anything");
             box.foundSomething = false;
         }
-        // todo NB: we may need to deal with exceptions, try some ad-hoc example to see which kind of exceptions may rise
+
         box.inTime = true;
         return box;
     }

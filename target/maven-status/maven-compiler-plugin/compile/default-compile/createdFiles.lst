@@ -1,5 +1,6 @@
 utils/ReadPropertyFile.class
 virtuoso/VirtuosoQueryingProcess.class
+test/virtuoso/TestRemoteVirtuosoConnection.class
 threads/DealWithCapOnTheCacheBashThread.class
 utils/ReturnBox.class
 batch/wholedb/RunOnWholeDBwParam.class
@@ -21,5 +22,6 @@ batch/wholedb/RunOnWholeDB.class
 threads/QueryDiskCacheThread.class
 setup/ImportJSONDatabase.class
 batch/cache/RunWithCache.class
+test/virtuoso/TestVirtuosoConnection.class
 threads/LineageComputationThread.class
 utils/CustomURI.class

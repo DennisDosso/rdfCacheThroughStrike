@@ -24,7 +24,14 @@ public class ExtractQueriesFromWikidataLog {
             BufferedWriter w = Files.newBufferedWriter(Paths.get(ProjectPaths.wikidataAmendedLogFilePath))) {
             r.readLine(); // first line is made of headers
             String line = "";
+            int counter = 0;
             while((line = r.readLine()) != null) {
+                if(counter > 1000000) { // put a stop to this madness
+                    break;
+                }
+
+                counter++;
+
                 String[] parts = line.split("\t");
                 String query = parts[0];
                 String timestamp = parts[1];

@@ -46,18 +46,22 @@ public class ComputeAvgQueryTimeCacheExecution {
 
                     // read the data
                     String[] parts = line.split(",");
+                    long time = Long.parseLong(parts[1]);
+                    if(time > 10000) { // patch to take care of some outliers. Need to remove after completion
+                        oldLine = line;
+                        timeouts++;
+                        continue;
+                    }
+
                     if(parts[0].equals("miss")) { // this is a miss
-                        long time = Long.parseLong(parts[1]);
                         long cacheTime = Long.parseLong(parts[2]);
                         long dbTime = Long.parseLong(parts[3]);
                         times.add(time); cacheMissTimes.add(cacheTime); dbMissTimes.add(dbTime);
                         misses++;
                     } else if(parts[0].equals("hit")) { // this is a hit
-                        long time = Long.parseLong(parts[1]);
                         times.add(time);
                         hits++;
                     } else if(parts[0].equals("timeout")) { // this is a timeout
-                        long time = Long.parseLong(parts[1]);
                         times.add(time);
                         timeouts++;
                     }
@@ -68,8 +72,8 @@ public class ComputeAvgQueryTimeCacheExecution {
                         // remove the outliers
                         long max = Collections.max(times);
                         long min = Collections.min(times);
-                        times.remove(Long.valueOf(min));
-                        times.remove(Long.valueOf(max));
+//                        times.remove(Long.valueOf(min));
+//                        times.remove(Long.valueOf(max));
 
                         double avg = NumberUtils.averageLong(times);
                         averages.add(avg);

@@ -154,22 +154,41 @@ public class RunVirtuosoCache extends VirtuosoQueryingProcess {
      *</p>
      * */
     private void runOneQuery() throws IOException {
-        // prepare the thread
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<ReturnBox> future = executor.submit(new QueryDiskCacheThread(this));
         ReturnBox result = new ReturnBox();
-        try {
-            result = future.get(ProjectValues.timeoutSelectQueries, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            result.foundSomething = false;
-            result.inTime = false;
-        } finally {
-            if(!future.isDone())
-                future.cancel(true);
-            if(!executor.isTerminated())
-                executor.shutdownNow();
-        }
 
+        // first thing we do is check if the query was saved in the cache of empty queries
+        // it may be, however, that the first time the query is met for the first time.
+        // In that case we will have a cache miss, but the next time we will have a hit
+        long start = System.currentTimeMillis();
+        if(this.checkIfQueryIsEmpty(this.selectQuery)) {
+            // we know that the query is empty
+            long elapsed = System.currentTimeMillis() - start;
+            result.queryTime = elapsed;
+            result.resultSetSize = 0;
+            result.foundSomething = true;
+            result.inTime = true;
+        } else {
+            // need to run this query on the cache (never seen before as an empty query)
+            // prepare the thread
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<ReturnBox> future = executor.submit(new QueryDiskCacheThread(this));
+            try {
+                result = future.get(ProjectValues.timeoutSelectQueries, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                result.foundSomething = false;
+                result.inTime = false;
+            } finally {
+                if(!future.isDone())
+                    future.cancel(true);
+                if(!executor.isTerminated())
+                    executor.shutdownNow();
+            }
+
+            if(result.resultSetSize == 0 && this.executionTime >= ProjectValues.timesOneQueryIsExecuted) {
+                // if we are here, it means we need to insert this query among the ones we already found are emtpy
+                this.updateEmptyCache(result);
+            }
+        }
 
         // print the results on the file used as file with the results of the cache
         this.printResultsFromCacheExperiments(result);
@@ -309,6 +328,7 @@ public class RunVirtuosoCache extends VirtuosoQueryingProcess {
         // read and assign the parameters
         JCommander commander = JCommander.newBuilder().addObject(execution).build();
         commander.parse(args);
+
         execution.init();
 
         // run the query

@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /** Class that represents a general process of querying.
@@ -527,5 +528,49 @@ public class VirtuosoQueryingProcess extends QueryVault {
 
         // commit the deletion from the cache
         TripleStoreHandler.removeTriplesFromCacheUsingDeletionBuilder();
+    }
+
+    /** Returns true if we already met this query and it is an empty one
+     * */
+    protected boolean checkIfQueryIsEmpty(String selectQuery) {
+        String q = ConvertToHash.convertToHashSHA256(selectQuery);
+        String sql = String.format(SqlStrings.CHECK_EMPTY_QUERY, ProjectValues.schema);
+        boolean haha = false;
+        ResultSet rs = null;
+        try (PreparedStatement ps = this.rdbConnection.prepareStatement(sql)) {
+            ps.setString(1, q);
+            rs = ps.executeQuery();
+            if(rs.next()) {
+                haha = true;
+            } else {
+                haha = false;
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            if(rs != null)
+                try{
+                    rs.close();
+                } catch (SQLException throwables) {
+                    throwables.printStackTrace();
+                }
+        }
+        return haha;
+    }
+
+    /** Adds the current this.selectQuery to the cache
+     *
+     * */
+    protected void updateEmptyCache(ReturnBox result) {
+        String q = ConvertToHash.convertToHashSHA256(selectQuery);
+        String sql = String.format(SqlStrings.INSERT_EMPTY_QUERY, ProjectValues.schema);
+        try(PreparedStatement ps = this.rdbConnection.prepareStatement(sql)) {
+            ps.setString(1, q);
+            ps.executeUpdate(); // insert the query
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
     }
 }

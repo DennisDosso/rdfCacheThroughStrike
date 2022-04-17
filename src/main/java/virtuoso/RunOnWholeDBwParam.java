@@ -45,6 +45,7 @@ public class RunOnWholeDBwParam extends VirtuosoQueryingProcess {
     public ReturnBox runOneQuery() {
         // first, initialize the field this.selectQuery to the correct query from the file ProjectPaths.selectQueryFile
         this.takeQueryToPerform();
+//        System.out.println("[DEBUG] Running query " + this.selectQuery);
         // now perform the query
         ReturnBox res = this.runQueryOnWholeDB();
         return res;

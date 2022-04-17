@@ -55,25 +55,35 @@ public class CleanThingsUpWithVirtuoso {
             return;
         }
 
-        // delete the cache database in the disk
-        try {
-            FileUtils.cleanDirectory(new File(ProjectPaths.cacheDirectory));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         // truncate the table containing the tables with the data used for the caching, and reset autoincremental IDs
         String sql = "TRUNCATE TABLE %s.triples; TRUNCATE TABLE %s.triplestimeframes; TRUNCATE TABLE %s.lineage_cache; TRUNCATE TABLE %s.baselinecache;";
         sql = String.format(sql, ProjectValues.schema, ProjectValues.schema, ProjectValues.schema, ProjectValues.schema);
         try {
             // query being executed
-            System.out.println("query being executed to clean up: \n" + sql);
             PostgreHandler.getConnection(ProjectValues.produceJdbcString(), "Oppenheimer").prepareStatement(sql).execute();
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        try{
             sql = "ALTER SEQUENCE %s.triples_tripleid_seq RESTART WITH 1;";
             sql = String.format(sql, ProjectValues.schema);
             PostgreHandler.getConnection("Oppenheimer").prepareStatement(sql).executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
-            // now close the connection and say hello
+        try{
+            sql = "TRUNCATE TABLE %s.emptycache;";
+            sql = String.format(sql, ProjectValues.schema);
+            PostgreHandler.getConnection("Oppenheimer").prepareStatement(sql).executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        // now close the connection and say hello
+        try {
             PostgreHandler.closeConnection("Oppenheimer");
         } catch (SQLException e) {
             e.printStackTrace();
@@ -86,7 +96,7 @@ public class CleanThingsUpWithVirtuoso {
         // delete the construct support file (could be left from a previous iteration and have useless queries inside of it)
         (new File(ProjectPaths.supportTextFile)).delete();
 
-        System.out.println("Everything was correctly cleaned");
+        System.out.println("Cleaning operations carried on");
     }
 
 

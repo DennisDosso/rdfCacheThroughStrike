@@ -1,5 +1,6 @@
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/test/classes/ClassA.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/threads/QueryWholeDBAndSaveDataThread.java
+/Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/test/virtuoso/TestVirtuosoConnection.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/batch/cache/cleaning/CleanThingsUp.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/batch/printutil/PrintOneLineBatch.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/statistics/CompareCompleteness.java
@@ -30,6 +31,7 @@
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/threads/QueryWholeDBThread.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/batch/QueryVault.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/virtuoso/RunOnWholeDBwParam.java
+/Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/test/virtuoso/TestRemoteVirtuosoConnection.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery10.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery1.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/batch/cache/RunWithCache.java
@@ -60,6 +62,7 @@
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/utils/NumberUtils.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/threads/virtuoso/UpdateRDBDatabaseWithTriplesFromLineageThread.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/batch/QueryingProcess.java
+/Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/test/virtuoso/TestCountVirtuoso.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/statistics/ComputeAvgQueryTimeCacheExecution.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/query_generation/templates/BSBMQuery3.java
 /Users/dennisdosso/eclipse-workspace/rdfCreditRe/src/main/java/querying/bsbm/select/GeneralSelect.java

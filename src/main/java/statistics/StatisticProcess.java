@@ -18,7 +18,7 @@ public class StatisticProcess {
 
     List<Long> times; // times required on the system (total)
     List<Long> cacheMissTimes; // times required on the cache (when there is a miss)
-    List<Long> dbMissTimes; // times required on the DB (sfter the miss)
+    List<Long> dbMissTimes; // times required on the DB (after the miss)
 
     /** list with the values corresponding to the average time execution of 1 query
      * */
@@ -26,9 +26,9 @@ public class StatisticProcess {
 
     int hits, misses, timeouts;
 
-    BufferedReader queryReader;
-    BufferedReader wholeDbReader;
-    BufferedReader cacheReader;
+    protected BufferedReader queryReader;
+    protected BufferedReader wholeDbReader;
+    protected BufferedReader cacheReader;
 
     public StatisticProcess() {
         ProjectValues.init();

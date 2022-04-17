@@ -15,6 +15,8 @@ public class ConvertToHash {
             mDigest.update(toBeConverted.getBytes());
             converted = new String(mDigest.digest());
             converted = converted.replaceAll("\\u0000", ""); // remove the null characters from our strings
+            // I did this because, apparently, PostgreSQL created some exceptions when we
+            // tried to insert string with this character
 
         } catch (NoSuchAlgorithmException e) {
             System.err.println("No such algorithm as SHA-256 here");
