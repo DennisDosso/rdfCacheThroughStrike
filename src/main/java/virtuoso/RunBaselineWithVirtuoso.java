@@ -1,11 +1,12 @@
 package virtuoso;
 
-import batch.QueryingProcessParam;
 import com.beust.jcommander.JCommander;
 import properties.ProjectPaths;
 import properties.ProjectValues;
 import threads.*;
 import utils.*;
+
+import threads.virtuoso.QueryWholeDBAndSaveDataThread;
 
 import java.io.BufferedReader;
 import java.io.FileWriter;
@@ -23,9 +24,9 @@ import java.util.concurrent.*;
  * query in SPARQL). It also implements a maximum cap limit on the cache, using a LRU algorithm to reduce
  * the size.
  * */
-public class RunBaselineWParameters extends QueryingProcessParam {
+public class RunBaselineWithVirtuoso extends VirtuosoQueryingProcess {
 
-    public RunBaselineWParameters() {
+    public RunBaselineWithVirtuoso() {
         super();
     }
 
@@ -66,6 +67,7 @@ public class RunBaselineWParameters extends QueryingProcessParam {
         // open the files with the query (both select and construct)
         Path selectIn = Paths.get(ProjectPaths.selectQueryFile);
 
+        // get the query to compute
         try(BufferedReader selectReader = Files.newBufferedReader(selectIn)) {
             this.getTheQueriesToPerform(selectReader, this.queryNumber);
         } catch (IOException e) {
@@ -111,6 +113,8 @@ public class RunBaselineWParameters extends QueryingProcessParam {
         // first, identify the query to perform
         this.queryNumber = this.queryNumber - ProjectValues.epochLength;
         long elapsed = 0;
+
+        // update the cache with each query we saw so far
         for(int i = 0; i < ProjectValues.epochLength; i++) {
             // now, for each of the queries we saw so far, take it
             Path selectIn = Paths.get(ProjectPaths.selectQueryFile);
@@ -248,8 +252,25 @@ public class RunBaselineWParameters extends QueryingProcessParam {
      * */
     private long insertQueryDataToCacheDatabase(ReturnBox dbBox) {
         long start = System.currentTimeMillis();
-        String insertQuery = String.format(SqlStrings.ADD_TUPLE_TO_RDB_CACHE, ProjectValues.schema);
+        // first, check if this query is already present in the database
         String hash = ConvertToHash.convertToHashSHA256(this.selectQuery);
+        String findQuery = String.format(SqlStrings.GET_BASELINE_ANSWER, ProjectValues.schema);
+        try(PreparedStatement ps = rdbConnection.prepareStatement(findQuery)) {
+            ps.setString(1, hash);
+            ResultSet rs = ps.executeQuery();
+            if(rs.next()) {
+                // the query is already present
+                long elapsed = System.currentTimeMillis() - start;
+                this.updateRDBCacheWithQueryNumber(hash);// I need to update the database for this solution
+                return elapsed;
+            }
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        // if we are here, the query was found for the first time. We update the cache
+        String insertQuery = String.format(SqlStrings.ADD_TUPLE_TO_RDB_CACHE, ProjectValues.schema);
+
         try {
             PreparedStatement ps = this.rdbConnection.prepareStatement(insertQuery);
             for(int i = 0; i < dbBox.results.size(); ++i) {
@@ -264,16 +285,35 @@ public class RunBaselineWParameters extends QueryingProcessParam {
             e.printStackTrace();
             System.exit(1);
         }
-        long elapsed = System.currentTimeMillis() - start;
-        return elapsed;
+        return System.currentTimeMillis() - start;
+    }
 
+    /** Updates the time of execution of a set of answers in a database
+     * (Necessary to implement the LRU strategy)
+     * */
+    private void updateRDBCacheWithQueryNumber(String queryHash) {
+        if(this.executionTime != 0) {// do it only the first time we execute this query
+            return;
+        }
+        // query to update this query result to the lastest query number
+        String sql = String.format(SqlStrings.UPDATE_RECENTLY_USED_QUERY_NUMBER, ProjectValues.schema);
+        try {
+            PreparedStatement ps = this.rdbConnection.prepareStatement(sql);
+            ps.setInt(1, this.queryNumber);
+            ps.setString(2, queryHash);
+
+            ps.executeUpdate();
+            ps.close();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
     private ReturnBox runQueryOnWholeDBSavingData() {
         ExecutorService executor = Executors.newSingleThreadExecutor();
         Future<ReturnBox> future = null;
 
-        future = executor.submit(new QueryWholeDBAndSaveDataThread(this));
+        future = executor.submit(new threads.virtuoso.QueryWholeDBAndSaveDataThread(this));
         ReturnBox result = new ReturnBox();
         long start = System.currentTimeMillis();
         try{
@@ -289,24 +329,41 @@ public class RunBaselineWParameters extends QueryingProcessParam {
                 executor.shutdownNow();
         }
 
+        if(result.resultSetSize == 0 && this.executionTime >= ProjectValues.timesOneQueryIsExecuted) {
+            // if we are here, it means we need to insert this query among the ones we already found are emtpy
+            this.updateEmptyCache(result);
+        }
+
         return result;
     }
 
     public ReturnBox runOneQuery() {
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        Future<ReturnBox> future = executor.submit(new QueryRelationalDBCache(this));
+        // first, check if the query is already present in the "empty" cache
         ReturnBox result = new ReturnBox();
-        try {
-            result = future.get(ProjectValues.timeoutSelectQueries, TimeUnit.MILLISECONDS);
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            result.foundSomething = false;
-            result.inTime = false;
-        } finally {
-            if(!future.isDone())
-                future.cancel(true);
-            if(!executor.isTerminated())
-                executor.shutdownNow();
+
+        long start = System.currentTimeMillis();
+        if(this.checkIfQueryIsEmpty(this.selectQuery)) {
+            long elapsed = System.currentTimeMillis() - start;
+            result.queryTime = elapsed;
+            result.resultSetSize = 0;
+            result.foundSomething = true;
+            result.inTime = true;
+        } else {
+            ExecutorService executor = Executors.newSingleThreadExecutor();
+            Future<ReturnBox> future = executor.submit(new QueryRelationalDBCache(this));
+            try {
+                result = future.get(ProjectValues.timeoutSelectQueries, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException | ExecutionException | TimeoutException e) {
+                result.foundSomething = false;
+                result.inTime = false;
+            } finally {
+                if(!future.isDone())
+                    future.cancel(true);
+                if(!executor.isTerminated())
+                    executor.shutdownNow();
+            }
         }
+
 
         return result;
     }
@@ -378,10 +435,11 @@ public class RunBaselineWParameters extends QueryingProcessParam {
 
 
     public static void main(String[] args) {
-        RunBaselineWParameters execution = new RunBaselineWParameters();
+        RunBaselineWithVirtuoso execution = new RunBaselineWithVirtuoso();
         // read and assign the parameters
         JCommander commander = JCommander.newBuilder().addObject(execution).build();
         commander.parse(args);
+
         execution.init();
 
         // run the query

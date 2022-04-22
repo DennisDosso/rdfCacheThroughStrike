@@ -7,6 +7,7 @@ import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolution;
 import org.apache.jena.query.ResultSet;
 import org.eclipse.rdf4j.query.*;
+import properties.ProjectValues;
 import utils.ReturnBox;
 import virtuoso.jena.driver.VirtuosoQueryExecution;
 import virtuoso.jena.driver.VirtuosoQueryExecutionFactory;
@@ -54,7 +55,6 @@ public class QueryWholeDBThread implements Callable<ReturnBox>  {
             System.exit(-1);
         }
         ResultSet results = vqu.execSelect(); // run the select query
-//        System.out.println("[DEBUG] list of vars: " + results.getResultVars());
         box.queryTime = System.currentTimeMillis() - start;
 
         if(results.hasNext()) {
@@ -62,7 +62,7 @@ public class QueryWholeDBThread implements Callable<ReturnBox>  {
             box.foundSomething = true;
 
             // if necessary, compute the size of the result set
-            if(this.process.executionTime == 0) {
+            if(this.process.executionTime == 0 || this.process.executionTime >= ProjectValues.timesOneQueryIsExecuted) {
                 while(results.hasNext()) {
                     results.next();
                     resultSetSize++;

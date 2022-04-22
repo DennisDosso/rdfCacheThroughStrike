@@ -153,7 +153,7 @@ public class ComputeAvgQueryTimeCacheExecutionOnWindows {
         totalAvg = Math.round(totalAvg * 100.0) / 100.0;
         zInterval = Math.round(zInterval * 100.0) / 100.0;
 
-        System.out.println("Window number " + windowNumber);
+        System.out.println("Window number " + (windowNumber + 1));
         System.out.println(totalAvg + "\\pm" + zInterval);
         System.out.print(" hits: " + hits);
         System.out.print(" misses: " + misses);

@@ -212,6 +212,12 @@ public class TripleStoreHandler {
                         m.add(subjNode, p, l);
 
                     }
+                if(parts[2].equals("openlinksw")) {
+                    RDFDatatype custom = new XSDBaseStringType(parts[3] + "#" + parts[4]);
+                    Literal l = ResourceFactory.createTypedLiteral(parts[0], custom);
+                    m.add(subjNode, p, l);
+
+                }
                     if(parts[2].equals("unknown")) {
                         System.out.println("[WARNING] this triple has a special datatype, thus is added " +
                                 "as simple literal: " +

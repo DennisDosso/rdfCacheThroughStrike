@@ -48,7 +48,7 @@ public class DealWithCapOnTheCacheBashThread implements Callable<ReturnBox>  {
             if(!r.next())
                 return null;
             timeFrameSize = r.getInt(1);
-            System.out.println("[DEBUG] now the database says that the timeframesize is " + timeFrameSize);
+//            System.out.println("[DEBUG] now the database says that the timeframesize is " + timeFrameSize);
 
             r.close();
             count_stmt.close();

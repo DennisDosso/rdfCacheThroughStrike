@@ -101,6 +101,9 @@ public class SqlStrings {
     public static final String GET_BASELINE_ANSWER =
             "SELECT value from %s.baselinecache WHERE query_hash = ?;";
 
+    public static final String UPDATE_QUERY_NUMBER =
+            "";
+
     public static final String ADD_TUPLE_TO_RDB_CACHE =
             "INSERT INTO %s.baselinecache(\n" +
                     "\tquery_number, query_hash, value)\n" +

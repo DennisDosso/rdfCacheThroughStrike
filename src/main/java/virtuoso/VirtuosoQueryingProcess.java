@@ -2,6 +2,8 @@ package virtuoso;
 
 import batch.QueryVault;
 import com.beust.jcommander.Parameter;
+import org.apache.jena.query.QuerySolution;
+import org.eclipse.rdf4j.query.BindingSet;
 import org.eclipse.rdf4j.query.BooleanQuery;
 import org.eclipse.rdf4j.query.MalformedQueryException;
 import properties.ProjectPaths;
@@ -24,6 +26,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.*;
@@ -138,6 +141,13 @@ public class VirtuosoQueryingProcess extends QueryVault {
                 future.cancel(true);
             if(!executor.isTerminated())
                 executor.shutdownNow();
+        }
+
+        // if this query has an empty result set, we add it to the relational table that contains all such queries.
+        // In the future, we will find it quicker
+        if(result.resultSetSize == 0 && this.executionTime >= ProjectValues.timesOneQueryIsExecuted) {
+            // if we are here, it means we need to insert this query among the ones we already found are emtpy
+            this.updateEmptyCache(result);
         }
 
         return result;
@@ -336,6 +346,9 @@ public class VirtuosoQueryingProcess extends QueryVault {
      * in order to be quicker next time.
      * */
     private void addLineageToRDBCacheForNextTime(List<String[]> lineage) {
+        if(!ProjectValues.useSupportLineageCache) // perform this method only if asked
+            return;
+
         String queryHash = "";
         // convert the construct query in its hashed version
         try {
@@ -360,6 +373,7 @@ public class VirtuosoQueryingProcess extends QueryVault {
             ps.executeBatch();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
+            throwables.getNextException().printStackTrace(); // let us get more info
         }
 
 
@@ -563,6 +577,10 @@ public class VirtuosoQueryingProcess extends QueryVault {
      *
      * */
     protected void updateEmptyCache(ReturnBox result) {
+        boolean present = checkIfQueryIsEmpty(selectQuery);
+        if(present)
+            return;// the query is already present, no need to add it
+
         String q = ConvertToHash.convertToHashSHA256(selectQuery);
         String sql = String.format(SqlStrings.INSERT_EMPTY_QUERY, ProjectValues.schema);
         try(PreparedStatement ps = this.rdbConnection.prepareStatement(sql)) {
@@ -573,4 +591,7 @@ public class VirtuosoQueryingProcess extends QueryVault {
         }
 
     }
+
+
+
 }

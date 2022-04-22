@@ -184,10 +184,6 @@ public class RunVirtuosoCache extends VirtuosoQueryingProcess {
                     executor.shutdownNow();
             }
 
-            if(result.resultSetSize == 0 && this.executionTime >= ProjectValues.timesOneQueryIsExecuted) {
-                // if we are here, it means we need to insert this query among the ones we already found are emtpy
-                this.updateEmptyCache(result);
-            }
         }
 
         // print the results on the file used as file with the results of the cache

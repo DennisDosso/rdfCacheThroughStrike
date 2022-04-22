@@ -4,9 +4,11 @@ test/virtuoso/TestRemoteVirtuosoConnection.class
 threads/DealWithCapOnTheCacheBashThread.class
 utils/ReturnBox.class
 batch/wholedb/RunOnWholeDBwParam.class
+virtuoso/RunBaselineWithVirtuoso.class
 batch/printutil/PrintOneLineBatch.class
 utils/StripObjectFromDatatype.class
 properties/ProjectPaths.class
+threads/virtuoso/QueryWholeDBAndSaveDataThread.class
 batch/QueryingProcess.class
 utils/SilenceLog4J.class
 threads/QueryWholeDBThread.class

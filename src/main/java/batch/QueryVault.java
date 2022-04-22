@@ -5,6 +5,7 @@ import org.apache.jena.graph.Graph;
 import org.apache.jena.graph.Node;
 import org.apache.jena.graph.Triple;
 import org.apache.jena.query.QueryFactory;
+import org.apache.jena.query.QuerySolution;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelGraphInterface;
 import org.eclipse.rdf4j.model.Statement;
@@ -591,5 +592,15 @@ public class QueryVault {
             res += value + " ";
         }
         return res;
+    }
+
+    public String getValuesFromJenaQuerySolution(QuerySolution solution) {
+        String result = "";
+        Iterator<String> it = solution.varNames();
+        while(it.hasNext()) {
+            String key = it.next();
+            result += solution.get(key).toString();
+        }
+        return result;
     }
 }

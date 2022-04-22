@@ -49,6 +49,15 @@ public class NumberUtils {
         return (double) st / list.size();
     }
 
+    public static double varianceForLong(List<Long> list, double average) {
+        double st = 0;
+        for(long l : list) {
+            double c = ((double)l - average) * ((double)l - average);
+            st += c;
+        }
+        return (double) st / list.size();
+    }
+
     public static double standardDeviation(double variance) {
         return Math.sqrt(variance);
     }

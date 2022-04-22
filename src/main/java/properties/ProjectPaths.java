@@ -73,6 +73,8 @@ public class ProjectPaths {
 
     public static String bigDatabaseFilePath;
 
+    public static String baselineTimeFile;
+
 
 
     public static void init() {
@@ -97,6 +99,7 @@ public class ProjectPaths {
         wikidataLogFilePath = map.get("wikidataLogFilePath");
         wikidataAmendedLogFilePath = map.get("wikidataAmendedLogFilePath");
         bigDatabaseFilePath = map.get("bigDatabaseFilePath");
+        baselineTimeFile = map.get("baselineTimeFile");
     }
 
     public static void init(String args) {

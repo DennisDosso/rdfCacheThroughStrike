@@ -51,9 +51,13 @@ public class StripObjectFromDatatype {
                 String[] parts = datatype.split("/");
                 String value = parts[parts.length-1];
                 return new String[] {content, datatype, "custom", "http://www4.wiwiss.fu-berlin.de/bizer/bsbm/v01/vocabulary/", value};
+            } else if(datatype.contains("http://www.openlinksw.com/schemas/virtrdf")) {
+                String[] parts = datatype.split("#");
+                String value = parts[parts.length-1];
+                return new String[] {content, datatype, "openlinksw", parts[0], value};
             }
             else {
-                System.err.println("[WARNING!!!] a new datatype found in DBpedia," + datatype);
+                System.err.println("[WARNING!!!] a new datatype found: " + datatype + " in object " + obj);
                 return new String[] {content, datatype, "unknown"};
             }
 

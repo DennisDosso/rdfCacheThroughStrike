@@ -41,7 +41,6 @@ public class QueryRelationalDBCache implements Callable<ReturnBox>  {
                     counter++;
                 }
                 box.resultSetSize = counter;
-                this.updateRDBCacheWithQueryNumber(queryHash);// I need to update the database for this solution
             } else { // cache miss
                 box.foundSomething = false;
                 box.queryTime = System.currentTimeMillis() - start;
@@ -53,22 +52,5 @@ public class QueryRelationalDBCache implements Callable<ReturnBox>  {
         return box;
     }
 
-    /** Updates the time of execution of a set of answers in a database*/
-    private void updateRDBCacheWithQueryNumber(String queryHash) {
-        if(this.process.executionTime != 0) {// do it only the first time we execute this query
-            return;
-        }
-        // query to update this query result to the lastest query number
-        String sql = String.format(SqlStrings.UPDATE_RECENTLY_USED_QUERY_NUMBER, ProjectValues.schema);
-        try {
-            PreparedStatement ps = this.process.rdbConnection.prepareStatement(sql);
-            ps.setInt(1, this.process.queryNumber);
-            ps.setString(2, queryHash);
 
-            ps.executeUpdate();
-            ps.close();
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
-    }
 }
